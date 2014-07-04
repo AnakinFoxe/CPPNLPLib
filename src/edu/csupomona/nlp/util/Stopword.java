@@ -19,6 +19,15 @@ import java.util.List;
  */
 public class Stopword {
     private static HashSet<String> stopwords;
+    private static boolean initialized = false;
+
+    public static boolean isInitialized() {
+        return initialized;
+    }
+
+    public static void setInitialized(boolean initialized) {
+        Stopword.initialized = initialized;
+    }
 	
     /*
     * Initialize the HashSet which contains every stopword
@@ -35,6 +44,8 @@ public class Stopword {
                 stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
             }
             swFile.close();
+            
+            setInitialized(true); // set the flag
         } catch (IOException e) {
             System.out.println("Can not open file");
         }
