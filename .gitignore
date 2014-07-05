@@ -24,3 +24,4 @@ project-root-directory/
 + test/
 + build.xml
 /build/
+/dist/

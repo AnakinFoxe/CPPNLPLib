@@ -47,7 +47,7 @@ public class Stopword {
             
             setInitialized(true); // set the flag
         } catch (IOException e) {
-            System.out.println("Can not open file");
+            System.out.println("Can not open file: " + swFilePath);
         }
 
     }

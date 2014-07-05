@@ -14,19 +14,11 @@ import java.util.HashMap;
  */
 public class NGram {
     
-    private boolean rmStopword;
-    private boolean useStemmer;
+    private boolean rmStopword = false;
+    private boolean useStemmer = false;
     private Integer N;
     
     public NGram(Integer N) {
-        this.rmStopword = false;
-        this.useStemmer = false;
-        this.N = N;
-    }
-    
-    public NGram(boolean rmStopword, boolean useStemmer, Integer N) {
-        this.rmStopword = rmStopword;
-        this.useStemmer = useStemmer;
         this.N = N;
     }
 
@@ -36,6 +28,9 @@ public class NGram {
 
     public void setRmStopword(boolean rmStopword) {
         this.rmStopword = rmStopword;
+        
+        if (!Stopword.isInitialized())
+            System.out.println("Stopword class is not initialized yet.");
     }
 
     public boolean isUseStemmer() {
