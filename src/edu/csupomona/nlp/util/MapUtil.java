@@ -8,6 +8,7 @@ package edu.csupomona.nlp.util;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,5 +47,19 @@ public class MapUtil {
             result.put( entry.getKey(), entry.getValue() );
         }
         return result;
+    }
+        
+    /*
+    * Update the count of N-gram in the HashMap.
+    * @param map HashMap to be updated
+    * @param ngram String type N-gram
+    * @return Nothing
+    */
+    public static void updateHashMap(HashMap<String, Integer> map, String word) 
+        throws NullPointerException{
+        if (map.containsKey(word))
+            map.put(word, map.get(word)+1);   // add one
+        else
+            map.put(word, 1);  // init as one
     }
 }
