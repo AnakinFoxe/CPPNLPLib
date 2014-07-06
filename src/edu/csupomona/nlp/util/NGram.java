@@ -7,6 +7,7 @@
 package edu.csupomona.nlp.util;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -29,10 +30,9 @@ public class NGram {
     
     /*
     * Extract n-gram from input text and update the HashMap accordingly.
-    * The input string text will be preprocessed including special characters
-    * removal and redundant white space removal.
+    * Please preprocess the input text before extraction.
     * @param map HashMap to be updated
-    * @param ngram Input string text
+    * @param words Array of string type words
     * @return Nothing
     */
     public void updateNGram(HashMap<String, Integer> map, String[] words) 
@@ -42,6 +42,25 @@ public class NGram {
             String ngram = words[i];
             for (int idx = 1; idx < this.N; idx++) 
                 ngram += " " + words[i + idx];
+            
+            MapUtil.updateHashMap(map, ngram);
+        } 
+    }
+    
+    /*
+    * Extract n-gram from input text and update the HashMap accordingly.
+    * Please preprocess the input text before extraction.
+    * @param map HashMap to be updated
+    * @param words List of string type words
+    * @return Nothing
+    */
+    public void updateNGram(HashMap<String, Integer> map, List<String> words) 
+            throws NullPointerException {        
+        // create n-gram and update the HashMap
+        for (int i = 0; i <= words.size() - this.N; i++) {
+            String ngram = words.get(i);
+            for (int idx = 1; idx < this.N; idx++) 
+                ngram += " " + words.get(i + idx);
             
             MapUtil.updateHashMap(map, ngram);
         } 
