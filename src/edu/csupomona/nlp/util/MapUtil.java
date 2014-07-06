@@ -50,16 +50,44 @@ public class MapUtil {
     }
         
     /*
-    * Update the count of N-gram in the HashMap.
+    * Update +1 to the count of word in the HashMap.
     * @param map HashMap to be updated
-    * @param ngram String type N-gram
+    * @param ngram String type word
     * @return Nothing
     */
-    public static void updateHashMap(HashMap<String, Integer> map, String word) 
-        throws NullPointerException{
+    public static void updateHashMap(HashMap<String, Integer> map, 
+            String word) throws NullPointerException{
         if (map.containsKey(word))
             map.put(word, map.get(word)+1);   // add one
         else
             map.put(word, 1);  // init as one
+    }
+    
+    /*
+    * Update +n to the count of word in the HashMap.
+    * @param map HashMap to be updated
+    * @param ngram String type word
+    * @return Nothing
+    */
+    public static void updateHashMap(HashMap<String, Integer> map, 
+            String word, Integer n) throws NullPointerException{
+        if (map.containsKey(word))
+            map.put(word, map.get(word)+n);   // add n
+        else
+            map.put(word, n);  // init as n
+    }
+    
+    /*
+    * Calculate the sum of values in the HashMap
+    * @param map HashMap to be calculated
+    * @return int sum of values of the HashMap
+    */
+    public static int sumHashMap(HashMap<String, Integer> map) 
+            throws NullPointerException{
+        int sum = 0;
+        for (Integer value : map.values())
+            sum += value;
+        
+        return sum;
     }
 }

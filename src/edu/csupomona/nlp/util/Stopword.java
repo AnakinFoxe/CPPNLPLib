@@ -34,22 +34,18 @@ public class Stopword {
     * @param swFilePath The path to the file contains stopword in each line
     * @return Nothing
     */
-    public static void init(String swFilePath) {
-        try (FileReader swFile = new FileReader(swFilePath)){
-            BufferedReader swReader = new BufferedReader(swFile);
-            String sw;
+    public static void init(String swFilePath) throws IOException {
+        FileReader swFile = new FileReader(swFilePath);
+        BufferedReader swReader = new BufferedReader(swFile);
+        String sw;
 
-            stopwords = new HashSet<>();
-            while((sw = swReader.readLine()) != null){
-                stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
-            }
-            swFile.close();
-            
-            setInitialized(true); // set the flag
-        } catch (IOException e) {
-            System.out.println("Can not open file: " + swFilePath);
+        stopwords = new HashSet<>();
+        while((sw = swReader.readLine()) != null){
+            stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
         }
+        swFile.close();
 
+        setInitialized(true); // set the flag
     }
 
     /*
