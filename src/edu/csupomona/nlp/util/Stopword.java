@@ -32,10 +32,20 @@ public class Stopword {
     /*
     * Initialize the HashSet which contains every stopword
     * @param swFilePath The path to the file contains stopword in each line
+    *                   NOTE: Must convert the file into UTF-8 encoding
     * @return Nothing
     */
     public static void init(String swFilePath) throws IOException {
         FileReader swFile = new FileReader(swFilePath);
+        
+        // since we need to be compatible for non-English words
+        // the input file must be converted to UTF-8
+        if (!swFile.getEncoding().equals("UTF8")) {
+            System.err.println("Please convert " + swFilePath + " to UTF-8!");
+            System.err.println("Current encoding: " + swFile.getEncoding());
+            return;
+        }
+        
         BufferedReader swReader = new BufferedReader(swFile);
         String sw;
 
@@ -54,7 +64,8 @@ public class Stopword {
     * @param boolean True: is stopword, False: not stopword
     */
     public static boolean isStopword(String word) {
-        return stopwords.contains(word.replaceAll("\\s+", "").toLowerCase());
+        return (initialized 
+                && stopwords.contains(word.replaceAll("\\s+", "").toLowerCase()));
     }
 
     /*
@@ -66,7 +77,7 @@ public class Stopword {
         List<String> newSent = new ArrayList<>();
 
         for (String w : sentence) {
-            if (isStopword(w))
+            if (isStopword(w)) 
                 continue;
             newSent.add(w);
         }
