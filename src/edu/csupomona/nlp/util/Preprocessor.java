@@ -15,7 +15,7 @@ public class Preprocessor {
     
     /*
     * Removing special characters and redundant white spaces.
-    * @param text Input string text
+    * @param String Input string text
     * @return String Processed string text
     */
     public static String Simple(String text) {

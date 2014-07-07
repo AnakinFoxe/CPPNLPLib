@@ -31,8 +31,8 @@ public class NGram {
     /*
     * Extract n-gram from input text and update the HashMap accordingly.
     * Please preprocess the input text before extraction.
-    * @param map HashMap to be updated
-    * @param words Array of string type words
+    * @param HashMap<String, Integer> HashMap to be updated
+    * @param String[] Array of string type words
     * @return Nothing
     */
     public void updateNGram(HashMap<String, Integer> map, String[] words) 
@@ -50,8 +50,8 @@ public class NGram {
     /*
     * Extract n-gram from input text and update the HashMap accordingly.
     * Please preprocess the input text before extraction.
-    * @param map HashMap to be updated
-    * @param words List of string type words
+    * @param HashMap<String, Integer> HashMap to be updated
+    * @param List<String> List of string type words
     * @return Nothing
     */
     public void updateNGram(HashMap<String, Integer> map, List<String> words) 

@@ -24,8 +24,8 @@ public class MapUtil {
     * Refer to http://stackoverflow.com/questions/2864840/treemap-sort-by-value
     * Sort the Map entities according to the values in descendant order.
     * It is not able to sort HashMap
-    * @param map Value could be integer or float
-    * @return map Sorted map
+    * @param Map<K, V> Map which value could be integer or float
+    * @return Map<K, V> Sorted map
     */
     public static <K, V extends Comparable<? super V>> Map<K, V> 
         sortByValue( Map<K, V> map )
@@ -51,8 +51,8 @@ public class MapUtil {
         
     /*
     * Update +1 to the count of word in the HashMap.
-    * @param map HashMap to be updated
-    * @param ngram String type word
+    * @param HashMap<String, Integer> HashMap to be updated
+    * @param String String type word
     * @return Nothing
     */
     public static void updateHashMap(HashMap<String, Integer> map, 
@@ -65,8 +65,9 @@ public class MapUtil {
     
     /*
     * Update +n to the count of word in the HashMap.
-    * @param map HashMap to be updated
-    * @param ngram String type word
+    * @param HashMap<String, Integer> HashMap to be updated
+    * @param String String type word
+    * @param Integer count to be added
     * @return Nothing
     */
     public static void updateHashMap(HashMap<String, Integer> map, 
@@ -79,7 +80,7 @@ public class MapUtil {
     
     /*
     * Calculate the sum of values in the HashMap
-    * @param map HashMap to be calculated
+    * @param HashMap<String, Integer> HashMap to be calculated
     * @return int sum of values of the HashMap
     */
     public static int sumHashMap(HashMap<String, Integer> map) 

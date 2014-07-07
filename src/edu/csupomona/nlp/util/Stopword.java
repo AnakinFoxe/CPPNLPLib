@@ -9,71 +9,74 @@ package edu.csupomona.nlp.util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Xing
  */
 public class Stopword {
-    private static HashSet<String> stopwords;
-    private static boolean initialized = false;
+    private HashSet<String> stopwords;
 
-    public static boolean isInitialized() {
-        return initialized;
-    }
-
-    public static void setInitialized(boolean initialized) {
-        Stopword.initialized = initialized;
-    }
-	
     /*
     * Initialize the HashSet which contains every stopword
-    * @param swFilePath The path to the file contains stopword in each line
-    *                   NOTE: Must convert the file into UTF-8 encoding
-    * @return Nothing
+    * @param String Chose the language of stopwords
+    *               "C": Chinese
+    *               "E": English
     */
-    public static void init(String swFilePath) throws IOException {
-        FileReader swFile = new FileReader(swFilePath);
+    public Stopword(String language) {
+        this.stopwords = new HashSet<>();
         
-        // since we need to be compatible for non-English words
-        // the input file must be converted to UTF-8
-        if (!swFile.getEncoding().equals("UTF8")) {
-            System.err.println("Please convert " + swFilePath + " to UTF-8!");
-            System.err.println("Current encoding: " + swFile.getEncoding());
-            return;
+        String swPath;
+        switch (language) {
+            case "C":
+                // chinese stopwords
+                swPath = "/res/stopwords/stopwords_c.txt";
+                break;
+            case "E":
+                // english stopwords
+            default:
+                // default goes to english stopwords
+                swPath = "/res/stopwords/stopwords_e.txt";
+                break;
         }
         
-        BufferedReader swReader = new BufferedReader(swFile);
+        InputStreamReader isrSW = new InputStreamReader(
+                getClass().getResourceAsStream(swPath));
+        BufferedReader brSW = new BufferedReader(isrSW);
         String sw;
 
-        stopwords = new HashSet<>();
-        while((sw = swReader.readLine()) != null){
-            stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
+        try {
+            while((sw = brSW.readLine()) != null){
+                stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Stopword.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
-        swFile.close();
-
-        setInitialized(true); // set the flag
+        
     }
 
     /*
     * Check if the input word is a stopword
-    * @param word Input string word
+    * @param String Input string word
     * @param boolean True: is stopword, False: not stopword
     */
-    public static boolean isStopword(String word) {
-        return (initialized 
-                && stopwords.contains(word.replaceAll("\\s+", "").toLowerCase()));
+    public boolean isStopword(String word) {
+        return stopwords.contains(word.replaceAll("\\s+", "").toLowerCase());
     }
 
     /*
     * Remove stopwords from input sentence
-    * @param sentence List of string words
-    * @param List List of string words with stopwords been removed
+    * @param List<String> List of string words
+    * @param List<String> List of string words with stopwords been removed
     */
-    public static List<String> rmStopword(List<String> sentence) {
+    public List<String> rmStopword(List<String> sentence) {
         List<String> newSent = new ArrayList<>();
 
         for (String w : sentence) {
@@ -90,7 +93,7 @@ public class Stopword {
     * @param sentence Array of string words
     * @param Array Array of string words with stopwords been removed
     */
-    public static String[] rmStopword(String[] sentence) {
+    public String[] rmStopword(String[] sentence) {
         List<String> newSent = new ArrayList<>();
 
         for (String w : sentence) {
