@@ -32,13 +32,13 @@ public class ChineseSeg {
         
     }
     
-    /*
+    /**
     * Choose the type of segmentation algorithm
-    * @param String type of segmentation algorithm
-    *                "S": simple
-    *                "C": complex (default)
-    *                "M": max word
-    * @return Seg segmentation algorithm
+    * @param segType    type of segmentation algorithm
+    *                   "S": simple
+    *                   "C": complex (default)
+    *                   "M": max word
+    * @return           Segmentation algorithm
     */
     private Seg chooseSeg(String segType) {
         Seg seg;
@@ -61,11 +61,12 @@ public class ChineseSeg {
         return seg;
     }
     
-    /*
+    /**
     * Use MMSeg algorithm to segment input string text into words and phrases
-    * @param String Input string text
-    * @param String type of segmentation algorithm
-    * @return List<String> List of words and phrases
+    * @param text       Input string text
+    * @param segType    Type of segmentation algorithm
+    * @return           List of words and phrases
+     * @throws java.io.IOException
     */
     public List<String> toMMsegWords(String text, String segType) 
             throws IOException {

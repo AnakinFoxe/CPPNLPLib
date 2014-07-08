@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- *
+ * Extract n-gram information from text
  * @author Xing
  */
 public class NGram {
@@ -28,12 +28,11 @@ public class NGram {
         this.N = N;
     }
     
-    /*
+    /**
     * Extract n-gram from input text and update the HashMap accordingly.
     * Please preprocess the input text before extraction.
-    * @param HashMap<String, Integer> HashMap to be updated
-    * @param String[] Array of string type words
-    * @return Nothing
+    * @param map        HashMap to be updated
+    * @param words      Array of string type words
     */
     public void updateNGram(HashMap<String, Integer> map, String[] words) 
             throws NullPointerException {        
@@ -47,12 +46,11 @@ public class NGram {
         } 
     }
     
-    /*
+    /**
     * Extract n-gram from input text and update the HashMap accordingly.
     * Please preprocess the input text before extraction.
-    * @param HashMap<String, Integer> HashMap to be updated
-    * @param List<String> List of string type words
-    * @return Nothing
+    * @param map        HashMap to be updated
+    * @param words      List of string type words
     */
     public void updateNGram(HashMap<String, Integer> map, List<String> words) 
             throws NullPointerException {        
