@@ -35,11 +35,11 @@ public class Preprocessor {
     }
 
     /**
-    * Removing HTML tag, HTML code, URL and punctuation.
-    * @param text       Input string text
-    * @return           Processed string text
+     * Removing HTML tag, HTML code, URL and punctuation.
+     * @param text       Input string text
+     * @return           Processed string text
     */
-    public static String Complex(String text) {
+    public static String complex(String text) {
         String parsed = removeHtmlTag(text);
         parsed = removeUrl(parsed);
         parsed = removeHtmlCode(parsed);
@@ -50,11 +50,11 @@ public class Preprocessor {
     
     
     /**
-    * Removing special characters and redundant white spaces.
-    * @param text       Input string text
-    * @return           Processed string text
+     * Removing special characters and redundant white spaces.
+     * @param text       Input string text
+     * @return           Processed string text
     */
-    public static String Simple(String text) {
+    public static String simple(String text) {
         // replacing everything except a-z A-Z 0-9 with space
         String newText = text.replaceAll("[^a-zA-Z0-9]+", " ");
         

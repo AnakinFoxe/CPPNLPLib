@@ -23,10 +23,10 @@ public class Stopword {
     private HashSet<String> stopwords;
 
     /**
-    * Initialize the HashSet which contains every stopword
-    * @param language   Chose the language of stopwords
-    *                   "C": Chinese
-    *                   "E": English
+     * Initialize the HashSet which contains every stopword
+     * @param language   Chose the language of stopwords
+     *                   "C": Chinese
+     *                   "E": English
     */
     public Stopword(String language) {
         this.stopwords = new HashSet<>();
@@ -62,18 +62,18 @@ public class Stopword {
     }
 
     /**
-    * Check if the input word is a stopword
-    * @param word       Input string word
-    * @return           True: is stopword, False: not stopword
+     * Check if the input word is a stopword
+     * @param word       Input string word
+     * @return           True: is stopword, False: not stopword
     */
     public boolean isStopword(String word) {
         return stopwords.contains(word.replaceAll("\\s+", "").toLowerCase());
     }
 
     /**
-    * Remove stopwords from input sentence
-    * @param sentence       List of string words
-    * @return               List of string words with stopwords been removed
+     * Remove stopwords from input sentence
+     * @param sentence       List of string words
+     * @return               List of string words with stopwords been removed
     */
     public List<String> rmStopword(List<String> sentence) {
         List<String> newSent = new ArrayList<>();
@@ -88,9 +88,9 @@ public class Stopword {
     }
 
     /**
-    * Remove stopwords from input sentence
-    * @param sentence       Array of string words
-    * @return               Array of string words with stopwords been removed
+     * Remove stopwords from input sentence
+     * @param sentence       Array of string words
+     * @return               Array of string words with stopwords been removed
     */
     public String[] rmStopword(String[] sentence) {
         List<String> newSent = new ArrayList<>();

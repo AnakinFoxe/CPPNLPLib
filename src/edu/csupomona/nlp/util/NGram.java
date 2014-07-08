@@ -29,10 +29,10 @@ public class NGram {
     }
     
     /**
-    * Extract n-gram from input text and update the HashMap accordingly.
-    * Please preprocess the input text before extraction.
-    * @param map        HashMap to be updated
-    * @param words      Array of string type words
+     * Extract n-gram from input text and update the HashMap accordingly.
+     * Please preprocess the input text before extraction.
+     * @param map        HashMap to be updated
+     * @param words      Array of string type words
     */
     public void updateNGram(HashMap<String, Integer> map, String[] words) 
             throws NullPointerException {        
@@ -47,10 +47,10 @@ public class NGram {
     }
     
     /**
-    * Extract n-gram from input text and update the HashMap accordingly.
-    * Please preprocess the input text before extraction.
-    * @param map        HashMap to be updated
-    * @param words      List of string type words
+     * Extract n-gram from input text and update the HashMap accordingly.
+     * Please preprocess the input text before extraction.
+     * @param map        HashMap to be updated
+     * @param words      List of string type words
     */
     public void updateNGram(HashMap<String, Integer> map, List<String> words) 
             throws NullPointerException {        

@@ -21,13 +21,13 @@ import java.util.Map;
 public class MapUtil {
     
     /**
-    * Sort the Map entities according to the values in descendant order.
-    * Refer to http://stackoverflow.com/questions/2864840/treemap-sort-by-value
-    * It is not able to sort HashMap
-    * @param map        Map to be sorted
+     * Sort the Map entities according to the values in descendant order.
+     * Refer to http://stackoverflow.com/questions/2864840/treemap-sort-by-value
+     * It is not able to sort HashMap
+     * @param map        Map to be sorted
      * @param <K>       Key of map entry
      * @param <V>       Value of map entry, could be integer or float
-    * @return           Sorted map
+     * @return           Sorted map
     */
     public static <K, V extends Comparable<? super V>> Map<K, V> 
         sortByValue( Map<K, V> map )
@@ -53,9 +53,9 @@ public class MapUtil {
     }
         
     /**
-    * Update +1 to the count of word in the HashMap.
-    * @param map        HashMap to be updated
-    * @param word       String type word
+     * Update +1 to the count of word in the HashMap.
+     * @param map        HashMap to be updated
+     * @param word       String type word
     */
     public static void updateHashMap(HashMap<String, Integer> map, 
             String word) throws NullPointerException{
@@ -66,10 +66,10 @@ public class MapUtil {
     }
     
     /**
-    * Update +n to the count of word in the HashMap.
-    * @param map        HashMap to be updated
-    * @param word       String type word
-    * @param n          Count to be added
+     * Update +n to the count of word in the HashMap.
+     * @param map        HashMap to be updated
+     * @param word       String type word
+     * @param n          Count to be added
     */
     public static void updateHashMap(HashMap<String, Integer> map, 
             String word, Integer n) throws NullPointerException{
@@ -80,9 +80,9 @@ public class MapUtil {
     }
     
     /**
-    * Calculate the sum of values in the HashMap
-    * @param map        HashMap to be calculated
-    * @return           Sum of values of the HashMap
+     * Calculate the sum of values in the HashMap
+     * @param map        HashMap to be calculated
+     * @return           Sum of values of the HashMap
     */
     public static int sumHashMap(HashMap<String, Integer> map) 
             throws NullPointerException{
