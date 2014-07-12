@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,27 +22,36 @@ import java.util.logging.Logger;
  */
 public class Stopword {
     private HashSet<String> stopwords;
+    private Locale locale;
 
     /**
      * Initialize the HashSet which contains every stopword
      * @param language   Chose the language of stopwords
-     *                   "C": Chinese
-     *                   "E": English
+     *                  "zh_CN": Simplified Chinese
+     *                  "en": English
+     *                  "es": Spanish
     */
     public Stopword(String language) {
         this.stopwords = new HashSet<>();
         
         String swPath;
         switch (language) {
-            case "C":
+            case "zh_CN":
                 // chinese stopwords
-                swPath = "/res/stopwords/stopwords_c.txt";
+                swPath = "/res/stopwords/zh_CN.txt";
+                locale = new Locale("zh");
                 break;
-            case "E":
+            case "es":
+                // spanish stopwords
+                swPath = "/res/stopwords/es.txt";
+                locale = new Locale("es");
+                break;
+            case "en":
                 // english stopwords
             default:
                 // default goes to english stopwords
-                swPath = "/res/stopwords/stopwords_e.txt";
+                swPath = "/res/stopwords/en.txt";
+                locale = new Locale("en");
                 break;
         }
         
@@ -67,7 +77,8 @@ public class Stopword {
      * @return           True: is stopword, False: not stopword
     */
     public boolean isStopword(String word) {
-        return stopwords.contains(word.replaceAll("\\s+", "").toLowerCase());
+        return stopwords.contains(word.replaceAll("\\s+", "")
+                .toLowerCase(locale));
     }
 
     /**
