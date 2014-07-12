@@ -62,7 +62,17 @@ public class Stopword {
 
         try {
             while((sw = brSW.readLine()) != null){
-                stopwords.add(sw.replaceAll("\\s+", ""));   // no white space
+                String raw = sw.trim();
+                
+                // index <= 1 is used for dealing with unicode...
+                if (raw.contains("#") && raw.indexOf("#") <= 1) {
+                    // display comment lines
+                    System.out.println(raw);
+                    continue;
+                }
+                
+                if (raw.length() > 0) // no white space
+                    stopwords.add(raw);   
             }
         } catch (IOException ex) {
             Logger.getLogger(Stopword.class.getName())

@@ -1,4 +1,5 @@
-﻿? 
+﻿# Stopword list found at http://bbs.byr.cn/#!article/ML_DM/39
+? 
 、 
 。 
 “ 

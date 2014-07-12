@@ -1,3 +1,4 @@
+﻿# Stopword list from Ranks NL: http://www.ranks.nl/stopwords
 a
 about
 above

@@ -1,4 +1,5 @@
-﻿un
+﻿# Stopword list from Ranks NL: http://www.ranks.nl/stopwords/spanish
+un
 una
 unas
 unos
