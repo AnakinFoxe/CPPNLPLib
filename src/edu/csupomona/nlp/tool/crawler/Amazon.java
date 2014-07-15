@@ -118,6 +118,8 @@ public class Amazon {
         // generate base URL given Amazon product id
         String baseUrl = getReviewUrl(productId);
         
+        System.out.println("Crawling " + productId + ":");
+        
         // scape review text using base URL
         List<String> reviews = scapeReview(baseUrl);
 
