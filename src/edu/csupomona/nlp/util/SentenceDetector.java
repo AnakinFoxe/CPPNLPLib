@@ -18,7 +18,7 @@ import java.util.Locale;
 public class SentenceDetector {
     
     private static final BreakIterator breakIter = 
-            BreakIterator.getSentenceInstance(Locale.US);;
+            BreakIterator.getSentenceInstance(Locale.US);
     
     /**
      * Detect and break input text into sentences

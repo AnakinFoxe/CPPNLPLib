@@ -134,4 +134,18 @@ public class StanfordTools {
             System.out.println(dependencies.toString("plain"));
         }
     }
+    
+    public static List<String> sentence(String text) {
+        List<String> listSentence = new ArrayList<>();
+        
+        Annotation document = new Annotation(text);
+        pipeline.annotate(document);
+
+        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+        for(CoreMap sentence: sentences) {			
+            listSentence.add(sentence.toString());
+        }
+        
+        return listSentence;
+    }
 }
