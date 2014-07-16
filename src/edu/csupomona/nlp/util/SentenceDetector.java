@@ -33,7 +33,7 @@ public class SentenceDetector {
         // loop through each sentence
         for (int end = breakIter.next(); end != BreakIterator.DONE;
                 start = end, end = breakIter.next()) {
-            sentences.add(text.substring(start,end));
+            sentences.add(text.substring(start,end).trim());
         }
         
         return sentences;
