@@ -107,8 +107,6 @@ public class Google {
             }
         }
         
-//        System.out.println(text + " => " + translatedText);
-        
         throw new IIOException("Failed after " + maxRetry 
                 + " times retries. Abort");
     }
