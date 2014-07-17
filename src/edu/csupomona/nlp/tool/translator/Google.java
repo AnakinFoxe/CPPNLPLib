@@ -13,6 +13,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.IIOException;
 import org.json.JSONObject;
 
 
@@ -71,25 +74,43 @@ public class Google {
         URL url = new URL(this.MAIN_URL 
                 + this.accessKey + query + this.source + this.target);
         
-        // UTF-8 is required for multi-lingual support
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(url.openStream(), "UTF-8"));
+        int maxRetry = 10;  // retry a few more times
+        for (int retry = 1; retry <= maxRetry; retry++) {
+            try {
+                // UTF-8 is required for multi-lingual support
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(url.openStream(), "UTF-8"));
+
+                // construct response from Google server
+                String line;
+                String response ="";
+                while ((line = br.readLine()) != null) 
+                    response += line;
+
+                // obtain the translated result from JSON string
+                JSONObject json = new JSONObject(response);
+                String translatedText = json.getJSONObject("data")
+                        .getJSONArray("translations").getJSONObject(0)
+                        .getString("translatedText");
+                
+                return translatedText;
+            } catch (IOException e) {
+                System.out.println("Problem with Google Translation. Retrying "
+                        + retry + "/" + maxRetry);
+                
+                try {
+                    Thread.sleep(3000 + 5000 * retry);  // incremental waiting
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Google.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                }
+            }
+        }
         
-        // construct response from Google server
-        String line;
-        String response ="";
-        while ((line = br.readLine()) != null) 
-            response += line;
+//        System.out.println(text + " => " + translatedText);
         
-        // obtain the translated result from JSON string
-        JSONObject json = new JSONObject(response);
-        String translatedText = json.getJSONObject("data")
-                .getJSONArray("translations").getJSONObject(0)
-                .getString("translatedText");
-        
-        System.out.println(text + " => " + translatedText);
-        
-        return translatedText;
+        throw new IIOException("Failed after " + maxRetry 
+                + " times retries. Abort");
     }
     
 }
