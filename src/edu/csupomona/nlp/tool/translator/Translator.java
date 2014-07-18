@@ -24,21 +24,38 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Translator using Google Translate API
  * @author Xing
  */
 public class Translator {
     
     private final Google gt;    // Google Translate API class
     
-    private final String PATH_DATA = "./data/";
-    private final String PATH_KEY = PATH_DATA + "google.txt";
-    private final String PATH_STATUS = PATH_DATA + "translate_status.txt";
+    // essential path info
+    private final String PATH_DATA;
+    private final String PATH_KEY;
+    private final String PATH_STATUS;
     
-    private String REG_PATH_BASE;
-    private String REG_PATH_TRANSLATE;
+    // regular expression for generating new folders and files
+    private String REG_PATH_SRC;
+    private String REG_PATH_DST;
     
-    public Translator(String source, String target) {
+    private boolean isRegPathUpdated = false;   // a protection flag
+    
+    /**
+     * Constructor. 
+     * @param basePath      Base path for the data directory. 
+     *                      Following files must be present:
+     *                      1) google.txt contains Google access key 
+     *                      2) translate_status.txt record translation status
+     * @param source        Source text language. E.g. "en" for English
+     * @param target        Target text language. E.g. "zh-CN" for Chinese
+     */
+    public Translator(String basePath, String source, String target) {
+        this.PATH_DATA = basePath;
+        this.PATH_KEY = this.PATH_DATA + "google.txt";
+        this.PATH_STATUS = this.PATH_DATA + "translate_status.txt";
+        
         String accessKey = readAccessKey();
         gt = new Google(accessKey, source, target);
         
@@ -46,7 +63,10 @@ public class Translator {
     }
     
     
-    
+    /**
+     * Read access key for Google Translate service
+     * @return          Google access key
+     */
     private String readAccessKey() {
         try {
             FileReader fr = new FileReader(PATH_KEY);
@@ -67,20 +87,46 @@ public class Translator {
         return null;
     }
     
-    private void updatePathReg(String basePath, String translatePath) {
-        String procBasePath = basePath.replaceAll("\\.", "");
-        String procTranslatePath = translatePath.replaceAll("\\.", "");
+    /**
+     * Update regular expression based on source and target path
+     * @param sourcePath        Path of the files to be translated
+     * @param targetPath        Path of translated files
+     */
+    private void updatePathReg(String sourcePath, String targetPath) {
+        String procSource = sourcePath.replaceAll("\\.", "");
+        String procTarget = targetPath.replaceAll("\\.", "");
         
         // only for windows platform
         if (System.getProperty("os.name").contains("Windows")) {
-            procBasePath = procBasePath.replaceAll("/", "\\\\\\\\");
-            procTranslatePath = procTranslatePath.replaceAll("/", "\\\\\\\\");
+            procSource = procSource.replaceAll("/", "\\\\\\\\");
+            procTarget = procTarget.replaceAll("/", "\\\\\\\\");
         }
         
-        REG_PATH_BASE = procBasePath;
-        REG_PATH_TRANSLATE = procTranslatePath;
+        REG_PATH_SRC = procSource;
+        REG_PATH_DST = procTarget;
+        
+        isRegPathUpdated = true;
     }
     
+    /**
+     * Generate corresponding new file path using regular expression
+     * @param filePath      Original path
+     * @return              Corresponding new path
+     */
+    private String getNewFilePath(String filePath) {
+        if (isRegPathUpdated)
+            return filePath.replaceAll(REG_PATH_SRC, REG_PATH_DST);
+        else
+            return null;
+    }
+    
+    /**
+     * Read through the path and record all the files into a list.
+     * Note that directories will be excluded.
+     * @param basePath          The path to be read
+     * @return                  List of canonical file paths
+     * @throws IOException 
+     */
     private List<String> loadAllFilePath(String basePath) throws IOException {
         List<String> fileList = new ArrayList<>();
         
@@ -96,6 +142,13 @@ public class Translator {
         return fileList;
     }
     
+    /**
+     * Read the translate_status.txt file to retrieve list of translated 
+     * files.
+     * @return          List of files already translated
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     private HashSet<String> loadStatusFile() 
             throws FileNotFoundException, IOException {
         HashSet<String> processedFiles = new HashSet<>();
@@ -111,9 +164,15 @@ public class Translator {
         return processedFiles;
     }
     
-    private void createCorresFolders(String folderPath) 
-            throws IOException {
-        File[] files = new File(folderPath).listFiles();
+    /**
+     * Create corresponding directory hierarchy according to source.
+     * @param sourcePath            Source path 
+     * @throws IOException 
+     * @throws NullPointerException
+     */
+    private void createCorresFolders(String sourcePath) 
+            throws IOException, NullPointerException {
+        File[] files = new File(sourcePath).listFiles();
         
         for (File file : files) {
             if (file.isDirectory()) {
@@ -134,8 +193,13 @@ public class Translator {
         }
     }
     
-    
-    private List<String> parseDoc(BufferedReader br) throws IOException {
+    /**
+     * Parse DUC2004 document
+     * @param br        BufferedReader to the file
+     * @return          List of sentences from the text section of the file
+     * @throws IOException
+     */
+    protected List<String> parseDoc(BufferedReader br) throws IOException {
         List<String> text = new ArrayList<>();
         String line;
         String paragraph = "";
@@ -181,8 +245,14 @@ public class Translator {
         return text;
     }
     
-    
-    private List<String> parseFile(String filePath) 
+    /**
+     * Parse the file into a list of sentences
+     * @param filePath      Path to the target file
+     * @return              List of sentences from the file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    protected List<String> parseFile(String filePath) 
             throws FileNotFoundException, IOException  {
         List<String> content = new ArrayList<>();
         
@@ -217,16 +287,28 @@ public class Translator {
         return content;
     }
     
+    /**
+     * Replace HTML character entities with corresponding punctuations
+     * @param text      Input text 
+     * @return          Processed text
+     */
     private String replaceHtmlEntity(String text) {
-        text = text.replaceAll("&quot;", "\"");
-        text = text.replaceAll("&amp;", "&");
-        text = text.replaceAll("&lt;", "<");
-        text = text.replaceAll("&gt;", ">");
-        text = text.replaceAll("&apos;", "'");
+        String procText = text.replaceAll("&quot;", "\"");
+        procText = procText.replaceAll("&amp;", "&");
+        procText = procText.replaceAll("&lt;", "<");
+        procText = procText.replaceAll("&gt;", ">");
+        procText = procText.replaceAll("&apos;", "'");
         
-        return text;
+        return procText;
     }
     
+    /**
+     * Call Google Translate API and translate the input sentences
+     * @param text      List of sentences to be translated
+     * @return          List of translated sentences
+     * @throws MalformedURLException
+     * @throws IOException 
+     */
     private List<String> translate(List<String> text) 
             throws MalformedURLException, IOException {
         List<String> translatedText = new ArrayList<>();
@@ -241,11 +323,14 @@ public class Translator {
         return translatedText;
     }
     
-    private String getNewFilePath(String filePath) {
-        return filePath.replaceAll(REG_PATH_BASE, REG_PATH_TRANSLATE);
-    }
-    
-    private void writeTranslatedText(List<String> text, String filePath) 
+    /**
+     * Write text to file.
+     * Note: Will overwrite the old file if names are the same.
+     * @param text          List of sentences
+     * @param filePath      Path to the file
+     * @throws IOException 
+     */
+    private void writeText(List<String> text, String filePath) 
             throws IOException {
         FileWriter fw = new FileWriter(filePath, false);    // overwrite
         try (BufferedWriter bw = new BufferedWriter(fw)) {
@@ -254,6 +339,12 @@ public class Translator {
         }
     }
     
+    /**
+     * Compute the character count of the list of sentences.
+     * Note: Whitespace is included.
+     * @param text      List of sentences
+     * @return 
+     */
     private Integer getCharCount(List<String> text) {
         Integer charCount = 0;
         for (String line : text) 
@@ -262,6 +353,12 @@ public class Translator {
         return charCount;
     }
    
+    /**
+     * Update translation status into translate_status.txt file
+     * @param filePath      The source file which is already translated
+     * @param charCount     The character count of the source file
+     * @throws IOException 
+     */
     private void updateStatusFile(String filePath, Integer charCount) 
             throws IOException {
         FileWriter fw = new FileWriter(PATH_STATUS, true);
@@ -275,19 +372,26 @@ public class Translator {
         }
     }
     
-    public void run(Integer quota, String basePath, String translatePath) 
+    /**
+     * Start translation
+     * @param quota             Daily quota limit for Google translate
+     * @param sourcePath        Path to the files to be translated
+     * @param translatePath     Path for translated files
+     * @throws IOException
+     */
+    public void run(Integer quota, String sourcePath, String translatePath) 
             throws IOException {
         // update path info
-        updatePathReg(basePath, translatePath);
+        updatePathReg(sourcePath, translatePath);
         
         // load all the files in the basePath, include subfolders
-        List<String> filePaths = loadAllFilePath(basePath);
+        List<String> filePaths = loadAllFilePath(sourcePath);
         
         // load processed file path for status file
         HashSet<String> processedFiles = loadStatusFile();
         
         // create corresponding folder if it does not exist
-        createCorresFolders(basePath);
+        createCorresFolders(sourcePath);
         
         for (String filePath : filePaths) {
             if (processedFiles.contains(filePath))
@@ -310,7 +414,7 @@ public class Translator {
             String newFilePath = getNewFilePath(filePath);
             
             // write the translated text 
-            writeTranslatedText(translatedText, newFilePath);
+            writeText(translatedText, newFilePath);
             
             // update the translation status (record the original file path)
             updateStatusFile(filePath, charCount);
