@@ -15,7 +15,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.IIOException;
 import org.json.JSONObject;
 
 
@@ -107,7 +106,7 @@ public class Google {
             }
         }
         
-        throw new IIOException("Failed after " + maxRetry 
+        throw new IOException("Failed after " + maxRetry 
                 + " times retries. Abort");
     }
     
