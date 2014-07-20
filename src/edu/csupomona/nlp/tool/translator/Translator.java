@@ -31,6 +31,8 @@ public class Translator {
     
     private final Google gt;    // Google Translate API class
     
+    private final StanfordTools stan;   // Stanford NLP tools
+    
     // essential path info
     private final String PATH_DATA;
     private final String PATH_KEY;
@@ -59,7 +61,7 @@ public class Translator {
         String accessKey = readAccessKey();
         gt = new Google(accessKey, source, target);
         
-        StanfordTools.init();
+        stan = new StanfordTools();
     }
     
     
@@ -221,7 +223,7 @@ public class Translator {
                 // into sentences and reset the paragraph
                 if (line.matches("^[\\s]+.*")) {
                     paragraph = paragraph.replaceAll("[ ]+", " ");
-                    text.addAll(StanfordTools.sentence(paragraph));
+                    text.addAll(stan.sentence(paragraph));
                     text.add("\n");
                     paragraph = ""; // reset
                 }
@@ -238,7 +240,7 @@ public class Translator {
         // last paragraph
         if (paragraph.length() > 1) {
             paragraph = paragraph.replaceAll("[ ]+", " ");
-            text.addAll(StanfordTools.sentence(paragraph));
+            text.addAll(stan.sentence(paragraph));
             text.add("\n");
         }
 

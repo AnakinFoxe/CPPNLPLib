@@ -67,7 +67,7 @@ public class Stopword {
                 // index <= 1 is used for dealing with unicode...
                 if (raw.contains("#") && raw.indexOf("#") <= 1) {
                     // display comment lines
-                    System.out.println(raw);
+//                    System.out.println(raw);
                     continue;
                 }
                 

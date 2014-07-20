@@ -17,15 +17,18 @@ import java.util.Locale;
  */
 public class SentenceDetector {
     
-    private static final BreakIterator breakIter = 
-            BreakIterator.getSentenceInstance(Locale.US);
+    private final BreakIterator breakIter;
+    
+    public SentenceDetector() {
+        breakIter = BreakIterator.getSentenceInstance(Locale.US);
+    }
     
     /**
      * Detect and break input text into sentences
      * @param text      Input text
      * @return          List of sentences
      */
-    public static List<String> simple(String text) {
+    public List<String> simple(String text) {
         List<String> sentences = new ArrayList<>();
     
         breakIter.setText(text);

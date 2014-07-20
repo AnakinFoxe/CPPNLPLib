@@ -41,7 +41,7 @@ public class Stemmer {
             default:
                 // default goes to English stemmer
                 snowball = new englishStemmer();
-                System.out.println("Default: using English stemmer.");
+//                System.out.println("Default: using English stemmer.");
                 break;
         }
     }

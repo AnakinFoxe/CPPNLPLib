@@ -30,11 +30,15 @@ import java.util.Properties;
  * @author Xing
  */
 public class StanfordTools {
-    private static StanfordCoreNLP pipeline;
-
-    public static void init() {
+    private final StanfordCoreNLP pipeline;
+    
+    public StanfordTools() {
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sentiment");
+        pipeline = new StanfordCoreNLP(props);
+    }
+    
+    public StanfordTools(Properties props) {
         pipeline = new StanfordCoreNLP(props);
     }
 
@@ -48,7 +52,7 @@ public class StanfordTools {
      *                  3 = positive,
      *                  4 = very positive
      */
-    public static int sentiment(String sentence) {
+    public int sentiment(String sentence) {
         if (sentence == null || sentence.length() == 0)
             return 2;
 
@@ -67,7 +71,7 @@ public class StanfordTools {
      * @param word      Input string word
      * @return          Lemmatized word
      */
-    public static String lemmatize(String word)
+    public String lemmatize(String word)
     {
         String lemma = null;
 
@@ -98,7 +102,7 @@ public class StanfordTools {
      *                  word[0]: word from the original text,
      *                  word[1]: POS tag of the word
      */
-    public static List<String[]> posTag(String text) {
+    public List<String[]> posTag(String text) {
         List<String[]> list = new ArrayList<>();
 
         Annotation document = new Annotation(text);
@@ -123,7 +127,7 @@ public class StanfordTools {
      * Dependency parse tree 
      * @param text      Input string text
      */
-    public static void parser(String text) {
+    public void parser(String text) {
         Annotation document = new Annotation(text);
         pipeline.annotate(document);
 
@@ -135,7 +139,7 @@ public class StanfordTools {
         }
     }
     
-    public static List<String> sentence(String text) {
+    public List<String> sentence(String text) {
         List<String> listSentence = new ArrayList<>();
         
         Annotation document = new Annotation(text);
