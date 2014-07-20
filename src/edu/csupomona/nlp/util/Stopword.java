@@ -122,9 +122,7 @@ public class Stopword {
             newSent.add(w);
         }
 
-        String[] arrNewSent = newSent.toArray(new String[0]);
-
-        return arrNewSent;
+        return newSent.toArray(new String[0]);
     }
     
 }
