@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +62,10 @@ public class Translator {
         String accessKey = readAccessKey();
         gt = new Google(accessKey, source, target);
         
-        stan = new StanfordTools();
+        // Stanford NLP with only tokenize and ssplit would be much faster
+        Properties props = new Properties();
+        props.put("annotators", "tokenize, ssplit");
+        stan = new StanfordTools(props);
     }
     
     
