@@ -139,6 +139,11 @@ public class StanfordTools {
         }
     }
     
+    /**
+     * Detect and break input text into sentences
+     * @param text      Input text
+     * @return          List of sentences
+     */
     public List<String> sentence(String text) {
         List<String> listSentence = new ArrayList<>();
         

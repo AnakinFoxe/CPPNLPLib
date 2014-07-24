@@ -10,6 +10,7 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  *
@@ -17,10 +18,15 @@ import java.util.Locale;
  */
 public class SentenceDetector {
     
-    private final BreakIterator breakIter;
+    private final BreakIterator breakIter_;
+    private final StanfordTools stanford_;
     
     public SentenceDetector() {
-        breakIter = BreakIterator.getSentenceInstance(Locale.US);
+        breakIter_ = BreakIterator.getSentenceInstance(Locale.US);
+        
+        Properties props = new Properties();
+        props.put("annotators", "tokenize, ssplit");
+        stanford_ = new StanfordTools(props);
     }
     
     /**
@@ -28,18 +34,27 @@ public class SentenceDetector {
      * @param text      Input text
      * @return          List of sentences
      */
-    public List<String> simple(String text) {
+    public List<String> simple(final String text) {
         List<String> sentences = new ArrayList<>();
     
-        breakIter.setText(text);
-        int start = breakIter.first();
+        breakIter_.setText(text);
+        int start = breakIter_.first();
         // loop through each sentence
-        for (int end = breakIter.next(); end != BreakIterator.DONE;
-                start = end, end = breakIter.next()) {
+        for (int end = breakIter_.next(); end != BreakIterator.DONE;
+                start = end, end = breakIter_.next()) {
             sentences.add(text.substring(start,end).trim());
         }
         
         return sentences;
+    }
+    
+    /**
+     * Using Stanford Core NLP to detect sentences
+     * @param text      Input text
+     * @return          List of sentences
+     */
+    public List<String> complex(final String text) {
+        return stanford_.sentence(text);
     }
     
 }
