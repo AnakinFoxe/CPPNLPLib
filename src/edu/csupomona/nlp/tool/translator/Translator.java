@@ -99,8 +99,9 @@ public class Translator {
      * @param targetPath        Path of translated files
      */
     private void updatePathReg(String sourcePath, String targetPath) {
-        String procSource = sourcePath.replaceAll("\\.", "");
-        String procTarget = targetPath.replaceAll("\\.", "");
+        // removing the heading dot. e.g. "./data"
+        String procSource = sourcePath.replaceAll("^\\.", "");
+        String procTarget = targetPath.replaceAll("^\\.", "");
         
         // only for windows platform
         if (System.getProperty("os.name").contains("Windows")) {
