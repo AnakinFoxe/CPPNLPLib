@@ -25,7 +25,7 @@ public class Stopword {
     private Locale locale;
 
     /**
-     * Initialize the HashSet which contains every stopword
+     * Initialize the HashSet with build-in stopword list
      * @param language   Chose the language of stopwords
      *                  "zh_CN": Simplified Chinese
      *                  "en": English
@@ -55,6 +55,31 @@ public class Stopword {
                 break;
         }
         
+        // read the file inside jar
+        readStopwordFile(swPath);
+        
+    }
+    
+    /**
+     * Initialize the HashSet with given stopword list file
+     * @param language      Chose the Locale. E.g. "es" for Spanish
+     * @param swPath        Path to the stopword list file 
+     */
+    public Stopword(String language, String swPath) {
+        this.stopwords = new HashSet<>();
+        
+        // set Locale
+        locale = new Locale(language);
+        
+        // read the file from providing path
+        readStopwordFile(swPath);
+    }
+    
+    /**
+     * Read stopword list from file of given path
+     * @param swPath        Path to the stopword list file
+     */
+    private void readStopwordFile(String swPath) {
         InputStreamReader isrSW = new InputStreamReader(
                 getClass().getResourceAsStream(swPath));
         BufferedReader brSW = new BufferedReader(isrSW);
@@ -78,7 +103,6 @@ public class Stopword {
             Logger.getLogger(Stopword.class.getName())
                     .log(Level.SEVERE, null, ex);
         }
-        
     }
 
     /**
