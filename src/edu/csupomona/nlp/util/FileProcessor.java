@@ -29,7 +29,7 @@ public class FileProcessor {
     
     private boolean isRegPathUpdated;   // a protection flag
     
-    private final StanfordTools stan;   // Stanford NLP tools
+    protected final StanfordTools stan;   // Stanford NLP tools
     
     public FileProcessor() {
         isRegPathUpdated = false;

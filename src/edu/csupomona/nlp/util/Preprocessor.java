@@ -7,31 +7,50 @@
 package edu.csupomona.nlp.util;
 
 /**
- * Preprocess text to remove unnecessary characters
+ * Preprocess text to remove unnecessary characters.
+ * Note: only suitable for English
  * @author Xing
  */
 public class Preprocessor {
     
     private static String removeHtmlTag(String line) {
-        return line.replaceAll("<.+?>", "");
+        return line.replaceAll("<.+?>", " ");
     }
 
     private static String removeUrl(String line) {
-        return line.replaceAll("http[s]?://[\\w\\d\\./]+", "");
+        return line.replaceAll("http[s]?://[\\w\\d\\./]+", " ");
     }
 
     private static String removePunctuation(String line) {
-        String parsed = line.replaceAll("([0-9]+)\"", "\1 inch");
-        parsed = parsed.replaceAll("\"", "");
-        parsed = parsed.replaceAll("\\*", "");
-        parsed = parsed.replaceAll("\\$([0-9]+)", "\1 dollars");
+        String parsed = line.replaceAll(" ([0-9]+)\"", "$1 inch");
+        parsed = parsed.replaceAll("\"", " ");
+        parsed = parsed.replaceAll("\\*", " ");
+        parsed = parsed.replaceAll("\\$([0-9]+)", "$1 dollars");
         parsed = parsed.replaceAll(" @ ", " at ");
+        
+        parsed = parsed.replaceAll("([,.?!])", " $1 ");
 
         return parsed;
     }
 
     private static String removeHtmlCode(String line) {
-        return line.replaceAll("&#[0-9]+", "");
+        return line.replaceAll("&#[0-9]+", " ");
+    }
+    
+    private static String removeEmail(String line) {
+        return line.replaceAll("[a-zA-Z0-9.]+@[a-zA-Z0-9.]+", " ");
+    }
+    
+    private static String removeBetweenBrackets(String line) {
+        return line.replaceAll("\\(.+?\\)", " ");
+    }
+    
+    private static String removeIrregularSymbols(String line) {
+        return line.replaceAll("[^a-zA-Z0-9,.?!%&\\-+_/']", " ");
+    }
+    
+    private static String removeSpaces(String line) {
+        return line.replaceAll("[ ]+", " ");
     }
 
     /**
@@ -40,12 +59,21 @@ public class Preprocessor {
      * @return           Processed string text
     */
     public static String complex(String text) {
+        // specific complexities
         String parsed = removeHtmlTag(text);
         parsed = removeUrl(parsed);
         parsed = removeHtmlCode(parsed);
+        parsed = removeEmail(parsed);
+        
+        // general stuff
+        parsed = removeBetweenBrackets(parsed);
         parsed = removePunctuation(parsed);
-
-        return parsed;
+        parsed = removeIrregularSymbols(parsed);
+        
+        // final processing
+        parsed = removeSpaces(parsed);
+        
+        return parsed.toLowerCase();
     }
     
     
