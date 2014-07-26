@@ -18,18 +18,9 @@ public class Preprocessor {
     }
 
     private static String removeUrl(String line) {
-        return line.replaceAll("http[s]?://[\\w\\d\\./]+", " ");
-    }
-
-    private static String removePunctuation(String line) {
-        String parsed = line.replaceAll(" ([0-9]+)\"", "$1 inch");
-        parsed = parsed.replaceAll("\"", " ");
-        parsed = parsed.replaceAll("\\*", " ");
-        parsed = parsed.replaceAll("\\$([0-9]+)", "$1 dollars");
-        parsed = parsed.replaceAll(" @ ", " at ");
+        String parsed = line.replaceAll("http[s]?://[\\w\\d\\./]+", " ");
+        parsed = parsed.replaceAll("([a-zA-Z0-9]+\\.)+[a-zA-Z]+", " ");
         
-        parsed = parsed.replaceAll("([,.?!])", " $1 ");
-
         return parsed;
     }
 
@@ -40,13 +31,30 @@ public class Preprocessor {
     private static String removeEmail(String line) {
         return line.replaceAll("[a-zA-Z0-9.]+@[a-zA-Z0-9.]+", " ");
     }
+
     
     private static String removeBetweenBrackets(String line) {
         return line.replaceAll("\\(.+?\\)", " ");
     }
     
+    private static String removePunctuation(String line) {
+        String parsed = line.replaceAll(" ([0-9]+)\"", "$1 inch");
+        parsed = parsed.replaceAll("\"", " ");
+        parsed = parsed.replaceAll("\\*", " ");
+        parsed = parsed.replaceAll("\\$([0-9]+)", "$1 dollars");
+        parsed = parsed.replaceAll(" @ ", " at ");
+        
+        parsed = parsed.replaceAll("[\\-+_/]", "");
+        
+        parsed = parsed.replaceAll("([,?!])", " $1 ");
+        parsed = parsed.replaceAll("([a-zA-Z])\\.", "$1 \\. ");
+        parsed = parsed.replaceAll("\\.([a-zA-Z])", " \\. $1");
+
+        return parsed;
+    }
+    
     private static String removeIrregularSymbols(String line) {
-        return line.replaceAll("[^a-zA-Z0-9,.?!%&\\-+_/']", " ");
+        return line.replaceAll("[^a-zA-Z0-9,.?!%&']", " ");
     }
     
     private static String removeSpaces(String line) {
