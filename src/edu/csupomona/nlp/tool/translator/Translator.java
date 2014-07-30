@@ -6,6 +6,7 @@
 
 package edu.csupomona.nlp.tool.translator;
 
+import edu.csupomona.nlp.util.FileProcessor;
 import edu.csupomona.nlp.util.StanfordTools;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  * Translator using Google Translate API
  * @author Xing
  */
-public class Translator {
+public class Translator extends FileProcessor {
     
     private final Google gt;    // Google Translate API class
     
@@ -38,12 +39,7 @@ public class Translator {
     private final String PATH_DATA;
     private final String PATH_KEY;
     private final String PATH_STATUS;
-    
-    // regular expression for generating new folders and files
-    private String REG_PATH_SRC;
-    private String REG_PATH_DST;
-    
-    private boolean isRegPathUpdated = false;   // a protection flag
+  
     
     /**
      * Constructor. 
@@ -94,62 +90,6 @@ public class Translator {
     }
     
     /**
-     * Update regular expression based on source and target path
-     * @param sourcePath        Path of the files to be translated
-     * @param targetPath        Path of translated files
-     */
-    private void updatePathReg(String sourcePath, String targetPath) {
-        // removing the heading dot. e.g. "./data"
-        String procSource = sourcePath.replaceAll("^\\.", "");
-        String procTarget = targetPath.replaceAll("^\\.", "");
-        
-        // only for windows platform
-        if (System.getProperty("os.name").contains("Windows")) {
-            procSource = procSource.replaceAll("/", "\\\\\\\\");
-            procTarget = procTarget.replaceAll("/", "\\\\\\\\");
-        }
-        
-        REG_PATH_SRC = procSource;
-        REG_PATH_DST = procTarget;
-        
-        isRegPathUpdated = true;
-    }
-    
-    /**
-     * Generate corresponding new file path using regular expression
-     * @param filePath      Original path
-     * @return              Corresponding new path
-     */
-    private String getNewFilePath(String filePath) {
-        if (isRegPathUpdated)
-            return filePath.replaceAll(REG_PATH_SRC, REG_PATH_DST);
-        else
-            return null;
-    }
-    
-    /**
-     * Read through the path and record all the files into a list.
-     * Note that directories will be excluded.
-     * @param basePath          The path to be read
-     * @return                  List of canonical file paths
-     * @throws IOException 
-     */
-    private List<String> loadAllFilePath(String basePath) throws IOException {
-        List<String> fileList = new ArrayList<>();
-        
-        File[] files = new File(basePath).listFiles();
-        
-        for (File file : files) {
-            if (file.isDirectory())
-                fileList.addAll(loadAllFilePath(file.getCanonicalPath()));
-            else
-                fileList.add(file.getCanonicalPath());
-        }
-        
-        return fileList;
-    }
-    
-    /**
      * Read the translate_status.txt file to retrieve list of translated 
      * files.
      * @return          List of files already translated
@@ -171,34 +111,6 @@ public class Translator {
         return processedFiles;
     }
     
-    /**
-     * Create corresponding directory hierarchy according to source.
-     * @param sourcePath            Source path 
-     * @throws IOException 
-     * @throws NullPointerException
-     */
-    private void createCorresFolders(String sourcePath) 
-            throws IOException, NullPointerException {
-        File[] files = new File(sourcePath).listFiles();
-        
-        for (File file : files) {
-            if (file.isDirectory()) {
-                String path = file.getCanonicalPath();
-                
-                // get corresponding folder path
-                String newPath = getNewFilePath(path);
-                
-                // if the folder does not exist, create it
-                if (!new File(newPath).exists()) {
-                    System.out.println("Creating: " + newPath);
-                    new File(newPath).mkdir();
-                }
-                
-                // go recurrsive
-                createCorresFolders(path);
-            }
-        }
-    }
     
     /**
      * Parse DUC2004 document
@@ -259,7 +171,8 @@ public class Translator {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    protected List<String> parseFile(String filePath) 
+    @Override
+    protected List<String> processFile(String filePath) 
             throws FileNotFoundException, IOException  {
         List<String> content = new ArrayList<>();
         
@@ -330,21 +243,6 @@ public class Translator {
         return translatedText;
     }
     
-    /**
-     * Write text to file.
-     * Note: Will overwrite the old file if names are the same.
-     * @param text          List of sentences
-     * @param filePath      Path to the file
-     * @throws IOException 
-     */
-    private void writeText(List<String> text, String filePath) 
-            throws IOException {
-        FileWriter fw = new FileWriter(filePath, false);    // overwrite
-        try (BufferedWriter bw = new BufferedWriter(fw)) {
-            for (String line : text) 
-                bw.write(line + "\n");
-        }
-    }
     
     /**
      * Compute the character count of the list of sentences.
@@ -386,7 +284,7 @@ public class Translator {
      * @param translatePath     Path for translated files
      * @throws IOException
      */
-    public void run(Integer quota, String sourcePath, String translatePath) 
+    public void process(Integer quota, String sourcePath, String translatePath) 
             throws IOException {
         // update path info
         updatePathReg(sourcePath, translatePath);
@@ -405,7 +303,7 @@ public class Translator {
                 continue;
             
             // parse the file and get the content
-            List<String> content = parseFile(filePath);
+            List<String> content = processFile(filePath);
             
             // check the quota
             Integer charCount = getCharCount(content);
@@ -438,7 +336,7 @@ public class Translator {
 //        Translator t = new Translator("en", "es");
 //        
 //        try {
-//            t.run(2000000, "./data/duc/", "./data/translated/spanish/");
+//            t.process(2000000, "./data/duc/", "./data/translated/spanish/");
 //        } catch (IOException ex) {
 //            // when IOException is thrown out
 //            // it means something wrong with the translation request

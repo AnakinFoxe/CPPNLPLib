@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * File Processor to process batch of files
+ * File Processor to process batch of files.
+ * Default use without overriding any methods could be used to parse DUC2004 files.
  * @author Xing
  */
 public class FileProcessor {
@@ -29,14 +30,8 @@ public class FileProcessor {
     
     private boolean isRegPathUpdated;   // a protection flag
     
-    protected final StanfordTools stan;   // Stanford NLP tools
-    
     public FileProcessor() {
         isRegPathUpdated = false;
-        
-        Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit");
-        stan = new StanfordTools(props);
     }
     
     /**
@@ -44,7 +39,7 @@ public class FileProcessor {
      * @param sourcePath        Path of the files to be translated
      * @param targetPath        Path of translated files
      */
-    private void updatePathReg(String sourcePath, String targetPath) {
+    protected void updatePathReg(String sourcePath, String targetPath) {
         String procSource = sourcePath.replaceAll("^\\.", "");
         String procTarget = targetPath.replaceAll("^\\.", "");
         
@@ -65,7 +60,7 @@ public class FileProcessor {
      * @param filePath      Original path
      * @return              Corresponding new path
      */
-    private String getNewFilePath(String filePath) {
+    protected String getNewFilePath(String filePath) {
         if (isRegPathUpdated)
             return filePath.replaceAll(REG_PATH_SRC, REG_PATH_DST);
         else
@@ -78,7 +73,7 @@ public class FileProcessor {
      * @throws IOException 
      * @throws NullPointerException
      */
-    private void createCorresFolders(String sourcePath) 
+    protected void createCorresFolders(String sourcePath) 
             throws IOException, NullPointerException {
         File[] files = new File(sourcePath).listFiles();
         
@@ -110,7 +105,7 @@ public class FileProcessor {
      * @return                  List of canonical file paths
      * @throws IOException 
      */
-    private List<String> loadAllFilePath(String basePath) throws IOException {
+    protected List<String> loadAllFilePath(String basePath) throws IOException {
         List<String> fileList = new ArrayList<>();
         
         File[] files = new File(basePath).listFiles();
@@ -127,59 +122,8 @@ public class FileProcessor {
     
     
     /**
-     * Parse DUC2004 document
-     * @param br        BufferedReader to the file
-     * @return          List of sentences from the text section of the file
-     * @throws IOException
-     */
-    protected List<String> parseDoc(BufferedReader br) throws IOException {
-        List<String> text = new ArrayList<>();
-        String line;
-        String paragraph = "";
-        
-        boolean isText = false;
-        while ((line = br.readLine()) != null) {
-            // setting start and end point
-            if (line.contains("<TEXT>"))
-                isText = true;
-            else if (line.contains("</TEXT>"))
-                isText = false;
-            
-            // removing <***> and </***>
-            line = line.replaceAll("<[A-Z]+>", "");
-            line = line.replaceAll("</[A-Z]+>", "");
-            
-            if ((isText == true) && (line.length() > 0)) {
-                // when meets a new paragraph, converts the collected paragraph
-                // into sentences and reset the paragraph
-                if (line.matches("^[\\s]+.*")) {
-                    paragraph = paragraph.replaceAll("[ ]+", " ");
-                    text.addAll(stan.sentence(paragraph));
-                    text.add("\n");
-                    paragraph = ""; // reset
-                }
-                
-                // replace those strange `` and '' with "
-                line = line.replaceAll("[`]{2,5}", "\"");
-                line = line.replaceAll("[']{2,5}", "\"");
-                
-                // add this new line into paragraph
-                paragraph += " " + line;
-            }
-        }
-        
-        // last paragraph
-        if (paragraph.length() > 1) {
-            paragraph = paragraph.replaceAll("[ ]+", " ");
-            text.addAll(stan.sentence(paragraph));
-            text.add("\n");
-        }
-
-        return text;
-    }
-    
-    /**
-     * Parse the file into a list of sentences
+     * Parse the file into a list of sentences.
+     * Child class need to expand this method for specific parsing.
      * @param filePath      Path to the target file
      * @return              List of sentences from the file
      * @throws FileNotFoundException
@@ -195,26 +139,8 @@ public class FileProcessor {
         // read first line to tell the type of file
         String line;
         while ((line = br.readLine()) != null) {
-            if (line.trim().length() > 0) {
-                if (line.contains("<DOC>")) {
-                    // DUC documents
-                    content.addAll(parseDoc(br));
-                } else if (line.contains("DUC 2004")) {
-                    // duc2004.task5.topicsets
-                    // do nothing about it currently
-                    
-                } else {
-                    // model or peer summaries
-                    do {
-                        // replace those strange `` and '' with "
-                        line = line.replaceAll("[`]{2,5}", "\"");
-                        line = line.replaceAll("[']{2,5}", "\"");
-                        
-                        content.add(line.trim());
-                    } while((line = br.readLine()) != null);
-                }
-                break;
-            }
+            if (line.trim().length() > 0) 
+                content.add(line.trim());
         }
         
         return content;
@@ -227,7 +153,7 @@ public class FileProcessor {
      * @param filePath      Path to the file
      * @throws IOException 
      */
-    private void writeText(List<String> text, String filePath) 
+    protected void writeText(List<String> text, String filePath) 
             throws IOException {
         FileWriter fw = new FileWriter(filePath, false);    // overwrite
         try (BufferedWriter bw = new BufferedWriter(fw)) {

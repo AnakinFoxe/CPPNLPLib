@@ -197,13 +197,13 @@ public class StanfordTools {
                 String pos = token.get(PartOfSpeechAnnotation.class);
                 // this is the NER label of the token
                 String ne = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);       
-        }
+            }
 
-        // this is the parse tree of the current sentence
-        Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+            // this is the parse tree of the current sentence
+            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
 
-        // this is the Stanford dependency graph of the current sentence
-        SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+            // this is the Stanford dependency graph of the current sentence
+            SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 
         }
 
