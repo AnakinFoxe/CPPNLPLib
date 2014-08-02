@@ -6,16 +6,30 @@
 
 package edu.csupomona.nlp.util;
 
+import edu.stanford.nlp.dcoref.CorefChain;
+import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.GrammaticalStructure;
 import edu.stanford.nlp.trees.GrammaticalStructureFactory;
 import edu.stanford.nlp.trees.PennTreebankLanguagePack;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
 import edu.stanford.nlp.trees.TypedDependency;
+import edu.stanford.nlp.util.CoreMap;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -23,32 +37,68 @@ import java.util.Iterator;
  */
 public class Sentence2Clause {
     
-    private final LexicalizedParser lp;
+//    private final LexicalizedParser lp;
+//    
+//    private final GrammaticalStructureFactory gsf;
+//    
+//    private final Tokenizer token;
     
-    private final GrammaticalStructureFactory gsf;
-    
-    private final Tokenizer token;
+    private final StanfordCoreNLP pipeline;
     
     public Sentence2Clause() {
-        lp = LexicalizedParser.loadModel(
-            "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz",
-            "-maxLength", "80", "-retainTmpSubcategories");
-        
-        TreebankLanguagePack tlp = new PennTreebankLanguagePack();
-        gsf = tlp.grammaticalStructureFactory();
-        
-        token = new Tokenizer();
+        Properties props = new Properties();
+        props.put("annotators", "tokenize, ssplit, pos, parse");
+        pipeline = new StanfordCoreNLP(props);
     }
     
-    public void process(String sentence) {
-        Tree parse = lp.apply(Sentence.toWordList(token.simpleArray(sentence)));
-        GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
-        Collection<TypedDependency> tdl = gs.typedDependencies();
+    // the results of LexicalizedParser are not accurate 
+//    public Sentence2Clause(String maxLength) {
+//        lp = LexicalizedParser.loadModel(
+//            "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz",
+//            "-maxLength", maxLength, "-retainTmpSubcategories");
+//        
+//        TreebankLanguagePack tlp = new PennTreebankLanguagePack();
+//        gsf = tlp.grammaticalStructureFactory();
+//        
+//        token = new Tokenizer();
+//    }
+    
+//    public void process(String sentence) {
+//        Tree parse = lp.apply(Sentence.toWordList(token.simpleArray(sentence)));
+//        GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
+//        Collection<TypedDependency> tdl = gs.typedDependencies();
+//        
+//        Iterator<TypedDependency> itr = tdl.iterator();
+//        while (itr.hasNext()) {
+//            TypedDependency td = itr.next();
+//            System.out.println(td.reln().getShortName() 
+//                    + " GOV:" + td.gov().value() + "==" + td.gov().index() 
+//                    + "  DEP:" + td.dep().toString());
+//        }
+//    }
+    
+    
+    public void process(String text) {
+        // create an empty Annotation just with the given text
+        Annotation document = new Annotation(text);
+
+        // run all Annotators on this text
+        pipeline.annotate(document);
         
-        Iterator<TypedDependency> itr = tdl.iterator();
-        while (itr.hasNext()) {
-            TypedDependency td = itr.next();
-            System.out.println(td.reln().getShortName() + " GOV:" + td.gov().value() + "==" + td.gov().index() + "  DEP:" + td.dep().toString());
+        List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
+        
+        for(CoreMap sentence: sentences) {
+            // this is the Stanford dependency graph of the current sentence
+            SemanticGraph dependencies = 
+                    sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
+            System.out.println(dependencies.toString("plain"));
+            
+            for (SemanticGraphEdge edge : dependencies.getEdgeSet()) {
+                System.out.println(edge.getRelation().getShortName() + ": "
+                        + edge.getGovernor().value() + "(" + edge.getGovernor().index() + ") => " 
+                        + edge.getDependent().value() + "(" + edge.getDependent().index() + ")");
+                
+            }
             
         }
     }
