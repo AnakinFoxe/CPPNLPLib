@@ -21,13 +21,62 @@ public class SentenceDetector {
     private final BreakIterator breakIter_;
     private final StanfordTools stanford_;
     
-    public SentenceDetector() {
-        breakIter_ = BreakIterator.getSentenceInstance(Locale.US);
+    private final String language_;
+    
+    public SentenceDetector(String language) {
+        language_ = language;
         
+        switch (language) {
+            case "zh_CN":
+                breakIter_ = BreakIterator.getSentenceInstance(Locale.CHINESE);
+                break;
+            case "es":
+                breakIter_ = BreakIterator.getSentenceInstance(new Locale("es"));
+                break;
+            case "en":
+            default:
+                // default goes to English
+                breakIter_ = BreakIterator.getSentenceInstance(Locale.US);
+                break;
+        }
+
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit");
         stanford_ = new StanfordTools(props);
     }
+    
+    /**
+     * Sentence detection for Chinese 
+     * @param text      Input text
+     * @return          List of sentences
+     */
+    private List<String> chinese(final String text) {  
+        List<String> sentences = new ArrayList<>();  
+        
+        // preprocess the text  
+        String temp = text 
+                .replaceAll("~", "。")  
+                .replaceAll("～", "。")  
+                .replaceAll("！", "。")  
+                .replaceAll("!", "。")  
+                .replaceAll("？", "。")  
+                .replaceAll("﹖", "。")  
+                .replaceAll(";", "。")  
+                .replaceAll("；", "。")  
+                .replaceAll("。+", "。")  
+                .replaceAll("\\.\\.", "。")  
+                .replaceAll("……", "。");   
+
+        breakIter_.setText(temp);
+        int start = breakIter_.first();
+        // loop through each sentence
+        for (int end = breakIter_.next(); end != BreakIterator.DONE;
+                start = end, end = breakIter_.next()) {
+            sentences.add(temp.substring(start,end).trim());
+        }
+        
+        return sentences;  
+    }  
     
     /**
      * Detect and break input text into sentences
@@ -54,7 +103,10 @@ public class SentenceDetector {
      * @return          List of sentences
      */
     public List<String> complex(final String text) {
-        return stanford_.sentence(text);
+        if (language_.equals("zh_CN"))
+            return chinese(text);
+        else
+            return stanford_.sentence(text);
     }
     
 }
