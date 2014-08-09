@@ -10,7 +10,6 @@ import edu.csupomona.nlp.util.FileProcessor;
 import edu.csupomona.nlp.util.StanfordTools;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
