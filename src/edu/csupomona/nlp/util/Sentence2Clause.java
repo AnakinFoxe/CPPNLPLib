@@ -6,29 +6,14 @@
 
 package edu.csupomona.nlp.util;
 
-import edu.stanford.nlp.dcoref.CorefChain;
-import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.Sentence;
-import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
-import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
-import edu.stanford.nlp.trees.GrammaticalStructure;
-import edu.stanford.nlp.trees.GrammaticalStructureFactory;
-import edu.stanford.nlp.trees.PennTreebankLanguagePack;
-import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.trees.TreeCoreAnnotations;
-import edu.stanford.nlp.trees.TreebankLanguagePack;
-import edu.stanford.nlp.trees.TypedDependency;
 import edu.stanford.nlp.util.CoreMap;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -85,12 +70,12 @@ public class Sentence2Clause {
         // run all Annotators on this text
         pipeline.annotate(document);
         
-        List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
+        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
         
         for(CoreMap sentence: sentences) {
             // this is the Stanford dependency graph of the current sentence
             SemanticGraph dependencies = 
-                    sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
+                    sentence.get(BasicDependenciesAnnotation.class);
             System.out.println(dependencies.toString("plain"));
             
             for (SemanticGraphEdge edge : dependencies.getEdgeSet()) {
@@ -106,7 +91,9 @@ public class Sentence2Clause {
     
     public static void main(String[] args) {
         
-        String sentence = "I have this phone linked to my business Exchange account, and use this phone for work regularly .";
+//        String sentence = "I have this phone linked to my business Exchange account, and use this phone for work regularly .";
+//        String sentence = "John, who was the CEO of a company, played golf.";
+        String sentence = "I admire the fact that you are honest";
         
         Sentence2Clause s2c = new Sentence2Clause();
         
