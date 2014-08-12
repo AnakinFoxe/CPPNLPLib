@@ -38,19 +38,19 @@ public class Stopword {
         switch (language) {
             case "zh_CN":
                 // chinese stopwords
-                swPath = "/res/stopwords/zh_CN.txt";
+                swPath = "/stopwords/zh_CN.txt";
                 locale = new Locale("zh");
                 break;
             case "es":
                 // spanish stopwords
-                swPath = "/res/stopwords/es.txt";
+                swPath = "/stopwords/es.txt";
                 locale = new Locale("es");
                 break;
             case "en":
                 // english stopwords
             default:
                 // default goes to english stopwords
-                swPath = "/res/stopwords/en.txt";
+                swPath = "/stopwords/en.txt";
                 locale = new Locale("en");
                 break;
         }
@@ -80,6 +80,8 @@ public class Stopword {
      * @param swPath        Path to the stopword list file
      */
     private void readStopwordFile(String swPath) {
+        // use getResourceAsStream in Maven project will search the path
+        // starting from resources/ folder
         InputStreamReader isrSW = new InputStreamReader(
                 getClass().getResourceAsStream(swPath));
         BufferedReader brSW = new BufferedReader(isrSW);
