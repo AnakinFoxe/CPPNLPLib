@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import twitter4j.FilterQuery;
 import twitter4j.StallWarning;
 import twitter4j.Status;
@@ -36,7 +38,7 @@ import twitter4j.conf.ConfigurationBuilder;
 public class Twitter {
     
     // Twitter Stream API
-    private final TwitterStream ts; 
+    private final TwitterStream ts_; 
     
     // parameters
     private String lang_;    // for language filter
@@ -44,8 +46,14 @@ public class Twitter {
     private final HashSet<Long> idSet_;  // for id redundancy filter
     private final String IDSET_FILE_ = "idset.txt";
     
+    // limit restriction
+    private Integer sizeLimit_;
+    private Integer hourLimit_;
+    
     // recorded tweet list
-    private final List<String> tweet_;
+    private List<String> tweet_;
+    // file name for recording the tweets
+    private String filename_;
     
     /**
      * Construct Twitter for crawling with Stream API
@@ -57,8 +65,9 @@ public class Twitter {
         includeRetweet_ = false;
         idSet_ = loadSet();
         
-        // init tweet list
-        tweet_ = new ArrayList<>();
+        // init default restriction
+        sizeLimit_ = 3000;
+        hourLimit_ = 24;    // 24 hours
         
         // read and construct property
         Properties key = new Properties();
@@ -73,19 +82,38 @@ public class Twitter {
         cb.setOAuthAccessTokenSecret(key.getProperty("AccessTokenSecret"));
         
         // create twitter stream
-        ts = new TwitterStreamFactory(cb.build()).getInstance();
+        ts_ = new TwitterStreamFactory(cb.build()).getInstance();
         
         // add listener
-        ts.addListener(new StatusListener() {
+        ts_.addListener(new StatusListener() {
 
             @Override
             public void onStatus(Status status) {
                 // only record tweet matches requirement
-                if (isLangMatch(status) && isRetweetMatch(status) 
-                        && !isIdRedundant(status))
+                if (isRetweetMatch(status) && !isIdRedundant(status)) {
                     tweet_.add(status.getText());
+                    idSet_.add(status.getId());
+                }
                 
-                // limit check
+                System.out.println("[" + (idSet_.size()+1) + "/" + sizeLimit_ + "]"  
+                        + status.getId() + ": " + status.getText());
+                
+                // when limit is reached
+                if (isLimitReached()) {
+                    try {
+                        // write tweet to file
+                        write2File();
+                        
+                        // write id to file for future tracking
+                        updateSet(idSet_);
+                        
+                        // stop streaming
+                        ts_.cleanUp();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Twitter.class.getName())
+                                .log(Level.SEVERE, null, ex);
+                    }
+                }
             }
 
             @Override
@@ -132,6 +160,22 @@ public class Twitter {
     public void setIncludeRetweet(boolean includeRetweet) {
         this.includeRetweet_ = includeRetweet;
     }
+
+    public Integer getSizeLimit_() {
+        return sizeLimit_;
+    }
+
+    public void setSizeLimit_(Integer sizeLimit_) {
+        this.sizeLimit_ = sizeLimit_;
+    }
+
+    public Integer getHourLimit_() {
+        return hourLimit_;
+    }
+
+    public void setHourLimit_(Integer hourLimit_) {
+        this.hourLimit_ = hourLimit_;
+    }
     
     /**
      * Load HashSet of ID for crawled tweet
@@ -161,22 +205,23 @@ public class Twitter {
      * @param idSet
      * @throws IOException 
      */
-    private void updateSet(HashSet<Long> idSet, boolean append) 
+    private void updateSet(HashSet<Long> idSet) 
             throws IOException {
-        FileWriter fw = new FileWriter(IDSET_FILE_, append);
+        FileWriter fw = new FileWriter(IDSET_FILE_, false);
         try (BufferedWriter bw = new BufferedWriter(fw)) {
             for (Long id : idSet) 
                 bw.write(id + "\n");
         }
     }
     
-    /**
-     * Check whether language matches requirement
-     * @param status        Status from Twitter
-     * @return              True: match, False: mismatch
-     */
-    private boolean isLangMatch(Status status) {
-        return status.getLang().equals(lang_);
+    private void write2File() throws IOException {
+        // since we kept tracking id of tweet, so newly obtained tweet
+        // should be new ones. therefore we don't overwrite previous ones.
+        FileWriter fw = new FileWriter(filename_, true);
+        try (BufferedWriter bw = new BufferedWriter(fw)) {
+            for (String tweet : tweet_)
+                bw.write(tweet + "\n");
+        }
     }
     
     /**
@@ -197,20 +242,37 @@ public class Twitter {
         return idSet_.contains(status.getId());
     }
     
-    
-    
+    /**
+     * Check whether size and time restrictions have met
+     * @return              True: reached, False: no
+     */
+    private boolean isLimitReached() {
+        if (tweet_.size() >= sizeLimit_)
+            return true;
+        
+        return false;
+    }
     
     /**
      * Query with given keywords. Crawling will start immediately.
      * @param keywords      Array of keywords
      */
-    public void query(String[] keywords) {        
-        // construct FilterQuery with given keywords
+    public void query(String[] keywords) {    
+        // prepare for the new query
+        filename_ = "";
+        for (String keyword : keywords) 
+            filename_ += (keyword + "_");
+        filename_ += ".txt";
+        tweet_ = new ArrayList<>();
+        
+        // construct FilterQuery
         FilterQuery fQuery = new FilterQuery();
-        fQuery.track(keywords);
+        fQuery.track(keywords);     // track specified keywords
+        String[] languages = {lang_};
+        fQuery.language(languages); // track specified language
         
         // start streaming with FilterQuery
-        ts.filter(fQuery);
+        ts_.filter(fQuery);
     }
     
     
