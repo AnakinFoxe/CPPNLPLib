@@ -16,7 +16,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -95,7 +98,7 @@ public class Twitter {
                     idSet_.add(status.getId());
                 }
                 
-                System.out.println("[" + (idSet_.size()+1) + "/" + sizeLimit_ + "]"  
+                System.out.println("[" + idSet_.size() + "/" + sizeLimit_ + "]"  
                         + status.getId() + ": " + status.getText());
                 
                 // when limit is reached
@@ -221,7 +224,14 @@ public class Twitter {
         try (BufferedWriter bw = new BufferedWriter(fw)) {
             for (String tweet : tweet_)
                 bw.write(tweet + "\n");
+            
+            // also at the end of the file record time stamp
+            DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+            bw.write("#### Finished at: " 
+                    + df.format(Calendar.getInstance().getTime()) 
+                    + " ####\n");
         }
+        
     }
     
     /**
