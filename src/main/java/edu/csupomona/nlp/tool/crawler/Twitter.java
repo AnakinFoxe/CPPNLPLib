@@ -53,6 +53,9 @@ public class Twitter {
     private Integer sizeLimit_;
     private Integer hourLimit_;
     
+    // for hour limit
+    private final Calendar etaTime = Calendar.getInstance();
+    
     // recorded tweet list
     private List<String> tweet_;
     // file name for recording the tweets
@@ -257,10 +260,8 @@ public class Twitter {
      * @return              True: reached, False: no
      */
     private boolean isLimitReached() {
-        if (tweet_.size() >= sizeLimit_)
-            return true;
-        
-        return false;
+        return (tweet_.size() >= sizeLimit_)
+                || (Calendar.getInstance().after(etaTime));
     }
     
     /**
@@ -269,11 +270,16 @@ public class Twitter {
      */
     public void query(String[] keywords) {    
         // prepare for the new query
+        // construct file name
         filename_ = "";
         for (String keyword : keywords) 
             filename_ += (keyword + "_");
         filename_ += ".txt";
+        // init tweet list
         tweet_ = new ArrayList<>();
+        // calculate ETA time
+        Calendar cal = Calendar.getInstance();
+        etaTime.setTimeInMillis(cal.getTimeInMillis()+hourLimit_*3600*1000);
         
         // construct FilterQuery
         FilterQuery fQuery = new FilterQuery();
