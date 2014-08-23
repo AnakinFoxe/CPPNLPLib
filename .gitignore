@@ -28,3 +28,5 @@ project-root-directory/
 /lib/
 /nbproject/
 /build.xml
+/target/
+/src/main/resources/etc/key.properties
