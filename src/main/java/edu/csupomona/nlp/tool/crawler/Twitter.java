@@ -46,8 +46,7 @@ public class Twitter {
     // parameters
     private String lang_;    // for language filter
     private boolean includeRetweet_; // for retweet filter
-    private final HashSet<Long> idSet_;  // for id redundancy filter
-    private final String IDSET_FILE_ = "idset.txt";
+    private HashSet<Long> idSet_;  // for id redundancy filter
     
     // limit restriction
     private Integer sizeLimit_;
@@ -69,7 +68,6 @@ public class Twitter {
         // init default parameters
         lang_ = "en";
         includeRetweet_ = false;
-        idSet_ = loadSet();
         
         // init default restriction
         sizeLimit_ = 3000;
@@ -97,8 +95,12 @@ public class Twitter {
             public void onStatus(Status status) {
                 // only record tweet matches requirement
                 if (isRetweetMatch(status) && !isIdRedundant(status)) {
-                    tweet_.add(status.getText());
-                    idSet_.add(status.getId());
+                    String text = status.getText();
+                    Long id = status.getId();
+                    
+                    text = text.replaceAll("\\n", "");  // to the same line
+                    tweet_.add(id.toString() + ":" + text);
+                    idSet_.add(id);
                 }
                 
                 System.out.println("[" + idSet_.size() + "/" + sizeLimit_ + "]"  
@@ -109,10 +111,7 @@ public class Twitter {
                     try {
                         // write tweet to file
                         write2File();
-                        
-                        // write id to file for future tracking
-                        updateSet(idSet_);
-                        
+                                           
                         // stop streaming
                         ts_.cleanUp();
                     } catch (IOException ex) {
@@ -145,6 +144,17 @@ public class Twitter {
             @Override
             public void onException(Exception excptn) {
                 excptn.printStackTrace();
+                    
+                // anything wrong, just save everything we have and stop
+                try {
+                    // write tweet to file
+                    write2File();
+                    
+                    // stop streaming
+                    ts_.cleanUp();
+                } catch (IOException ex) {
+                    Logger.getLogger(Twitter.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
         
@@ -183,6 +193,7 @@ public class Twitter {
         this.hourLimit_ = hourLimit_;
     }
     
+    
     /**
      * Load HashSet of ID for crawled tweet
      * @return          HashSet which contains ID
@@ -191,33 +202,23 @@ public class Twitter {
         HashSet<Long> idSet = new HashSet<>();
         
         try {
-            FileReader fr = new FileReader(IDSET_FILE_);
+            FileReader fr = new FileReader(filename_);
             try (BufferedReader br = new BufferedReader(fr)) {
                 String line;
-                while ((line = br.readLine()) != null) 
-                    idSet.add(Long.valueOf(line.trim()));
+                while ((line = br.readLine()) != null) {
+                    if (!line.contains("####")) {
+                        String[] items = line.trim().split(":");
+                        idSet.add(Long.valueOf(items[0]));
+                    }
+                }
             }
         } catch (IOException e) {
-            System.out.println("WARNING: no " + IDSET_FILE_ + " exists!");
+            System.out.println("WARNING: no " + filename_ + " exists!");
             System.out.println("Creating one...");
-            new File(IDSET_FILE_);
+            new File(filename_);
         }
         
         return idSet;
-    }
-    
-    /**
-     * Update file which contains ID of tweet has been crawled
-     * @param idSet
-     * @throws IOException 
-     */
-    private void updateSet(HashSet<Long> idSet) 
-            throws IOException {
-        FileWriter fw = new FileWriter(IDSET_FILE_, false);
-        try (BufferedWriter bw = new BufferedWriter(fw)) {
-            for (Long id : idSet) 
-                bw.write(id + "\n");
-        }
     }
     
     private void write2File() throws IOException {
@@ -260,23 +261,23 @@ public class Twitter {
      * @return              True: reached, False: no
      */
     private boolean isLimitReached() {
-        return (tweet_.size() >= sizeLimit_)
+        return (idSet_.size() >= sizeLimit_)
                 || (Calendar.getInstance().after(etaTime));
     }
     
     /**
      * Query with given keywords. Crawling will start immediately.
+     * @param filename      File name for the query result
      * @param keywords      Array of keywords
      */
-    public void query(String[] keywords) {    
+    public void query(String filename, String[] keywords) {    
         // prepare for the new query
         // construct file name
-        filename_ = "";
-        for (String keyword : keywords) 
-            filename_ += (keyword + "_");
-        filename_ += ".txt";
+        filename_ = filename;
         // init tweet list
         tweet_ = new ArrayList<>();
+        // init id set
+        idSet_ = loadSet(); 
         // calculate ETA time
         Calendar cal = Calendar.getInstance();
         etaTime.setTimeInMillis(cal.getTimeInMillis()+hourLimit_*3600*1000);
