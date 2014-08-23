@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import twitter4j.FilterQuery;
 import twitter4j.StallWarning;
@@ -39,8 +41,11 @@ public class Twitter {
     // parameters
     private String lang_;    // for language filter
     private boolean includeRetweet_; // for retweet filter
-    private final HashSet<String> idSet_;  // for id redundancy filter
+    private final HashSet<Long> idSet_;  // for id redundancy filter
     private final String IDSET_FILE_ = "idset.txt";
+    
+    // recorded tweet list
+    private final List<String> tweet_;
     
     /**
      * Construct Twitter for crawling with Stream API
@@ -51,6 +56,9 @@ public class Twitter {
         lang_ = "en";
         includeRetweet_ = false;
         idSet_ = loadSet();
+        
+        // init tweet list
+        tweet_ = new ArrayList<>();
         
         // read and construct property
         Properties key = new Properties();
@@ -72,10 +80,12 @@ public class Twitter {
 
             @Override
             public void onStatus(Status status) {
-                System.out.println("text:" + status.getText());
-                System.out.println("lang:" + status.getLang());
-                System.out.println("reTw:" + status.isRetweet());
-                System.out.println("id:" + status.getId());
+                // only record tweet matches requirement
+                if (isLangMatch(status) && isRetweetMatch(status) 
+                        && !isIdRedundant(status))
+                    tweet_.add(status.getText());
+                
+                // limit check
             }
 
             @Override
@@ -127,15 +137,15 @@ public class Twitter {
      * Load HashSet of ID for crawled tweet
      * @return          HashSet which contains ID
      */
-    private HashSet<String> loadSet() {
-        HashSet<String> idSet = new HashSet<>();
+    private HashSet<Long> loadSet() {
+        HashSet<Long> idSet = new HashSet<>();
         
         try {
             FileReader fr = new FileReader(IDSET_FILE_);
             try (BufferedReader br = new BufferedReader(fr)) {
                 String line;
                 while ((line = br.readLine()) != null) 
-                    idSet.add(line.trim());
+                    idSet.add(Long.valueOf(line.trim()));
             }
         } catch (IOException e) {
             System.out.println("WARNING: no " + IDSET_FILE_ + " exists!");
@@ -151,13 +161,44 @@ public class Twitter {
      * @param idSet
      * @throws IOException 
      */
-    private void updateSet(HashSet<String> idSet) throws IOException {
-        FileWriter fw = new FileWriter(IDSET_FILE_, false);
+    private void updateSet(HashSet<Long> idSet, boolean append) 
+            throws IOException {
+        FileWriter fw = new FileWriter(IDSET_FILE_, append);
         try (BufferedWriter bw = new BufferedWriter(fw)) {
-            for (String id : idSet) 
+            for (Long id : idSet) 
                 bw.write(id + "\n");
         }
     }
+    
+    /**
+     * Check whether language matches requirement
+     * @param status        Status from Twitter
+     * @return              True: match, False: mismatch
+     */
+    private boolean isLangMatch(Status status) {
+        return status.getLang().equals(lang_);
+    }
+    
+    /**
+     * Check whether retweet status mathces requirement
+     * @param status        Status from Twitter
+     * @return              True: match, False: mismatch
+     */
+    private boolean isRetweetMatch(Status status) {
+        return (status.isRetweet() == includeRetweet_);
+    }
+    
+    /**
+     * Check whether ID of the tweet is redundant
+     * @param status        Status from Twitter
+     * @return              True: redundant, False: no
+     */
+    private boolean isIdRedundant(Status status) {
+        return idSet_.contains(status.getId());
+    }
+    
+    
+    
     
     /**
      * Query with given keywords. Crawling will start immediately.
