@@ -59,6 +59,11 @@ public class Twitter {
     private List<String> tweet_;
     // file name for recording the tweets
     private String filename_;
+    // product list for querying
+//    private HashMap<String, String[]> products_;
+    
+    // status of current query
+    private boolean queryDone_ = false;
     
     /**
      * Construct Twitter for crawling with Stream API
@@ -110,10 +115,8 @@ public class Twitter {
                 if (isLimitReached()) {
                     try {
                         // write tweet to file
-                        write2File();
-                                           
-                        // stop streaming
-                        ts_.cleanUp();
+                        finishup();
+                        
                     } catch (IOException ex) {
                         Logger.getLogger(Twitter.class.getName())
                                 .log(Level.SEVERE, null, ex);
@@ -147,11 +150,8 @@ public class Twitter {
                     
                 // anything wrong, just save everything we have and stop
                 try {
-                    // write tweet to file
-                    write2File();
+                    finishup();
                     
-                    // stop streaming
-                    ts_.cleanUp();
                 } catch (IOException ex) {
                     Logger.getLogger(Twitter.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -192,6 +192,10 @@ public class Twitter {
     public void setHourLimit_(Integer hourLimit_) {
         this.hourLimit_ = hourLimit_;
     }
+
+    public boolean isQueryDone_() {
+        return queryDone_;
+    }
     
     
     /**
@@ -221,7 +225,7 @@ public class Twitter {
         return idSet;
     }
     
-    private void write2File() throws IOException {
+    private void finishup() throws IOException {
         // since we kept tracking id of tweet, so newly obtained tweet
         // should be new ones. therefore we don't overwrite previous ones.
         FileWriter fw = new FileWriter(filename_, true);
@@ -236,6 +240,15 @@ public class Twitter {
                     + " ####\n");
         }
         
+        // check if more products need to be crawled
+//        if (products_.size() > 0)
+//            multiQueries(products_);
+//        else
+        
+        // stop streaming
+        ts_.cleanUp();
+        
+        queryDone_ = true;
     }
     
     /**
@@ -270,8 +283,9 @@ public class Twitter {
      * @param filename      File name for the query result
      * @param keywords      Array of keywords
      */
-    public void query(String filename, String[] keywords) {    
+    public void query(String filename, String[] keywords) {   
         // prepare for the new query
+        queryDone_ = false;
         // construct file name
         filename_ = filename;
         // init tweet list
@@ -282,6 +296,9 @@ public class Twitter {
         Calendar cal = Calendar.getInstance();
         etaTime.setTimeInMillis(cal.getTimeInMillis()+hourLimit_*3600*1000);
         
+        // debug info
+        System.out.println("Querying for => " + filename_);
+        
         // construct FilterQuery
         FilterQuery fQuery = new FilterQuery();
         fQuery.track(keywords);     // track specified keywords
@@ -289,8 +306,24 @@ public class Twitter {
         fQuery.language(languages); // track specified language
         
         // start streaming with FilterQuery
-        ts_.filter(fQuery);
+         ts_.filter(fQuery);
     }
     
-    
+    // seems TwitterStream won't start filter more than once
+    // so we have to construct TwitterStream each time for a new crawling
+//    public void multiQueries(HashMap<String, String[]> products) {
+//        products_ = products;
+//        
+//        // only use for-loop to grab one item from the map
+//        for (String filename : products_.keySet()) {
+//            // query the item
+//            query(filename, products_.get(filename));
+//            
+//            // remove this item
+//            products_.remove(filename);
+//            
+//            // break the for-loop
+//            break;
+//        }
+//    }
 }
