@@ -6,10 +6,19 @@
 
 package edu.csupomona.nlp.tool.crawler;
 
+import facebook4j.FacebookFactory;
+
 /**
  * Facebook crawler using Facebook4j
  * @author xing
  */
 public class Facebook {
+    
+    private final facebook4j.Facebook fb;
+    
+    public Facebook() {
+        fb = new FacebookFactory().getInstance();
+    }
+
     
 }
