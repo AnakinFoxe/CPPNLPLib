@@ -30,3 +30,4 @@ project-root-directory/
 /build.xml
 /target/
 /src/main/resources/etc/key.properties
+/nb-configuration.xml

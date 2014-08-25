@@ -326,4 +326,39 @@ public class Twitter {
 //            break;
 //        }
 //    }
+    
+    public static void main(String[] args) 
+            throws IOException, InterruptedException {
+        String dir = "./data/";
+        
+        // create hashmap of product for query
+        FileReader fr = new FileReader(dir + "product_list.txt");
+        try (BufferedReader br = new BufferedReader(fr)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // get file name and keywords from file
+                line = line.trim();
+                String[] items = line.split(":");
+                String filename = dir + items[0];
+                String[] keywords = items[1].split(",");
+                
+                // Construct Twitter crawler for streaming
+                Twitter twitter = new Twitter();
+                twitter.setLang("en");      // query for English tweet only
+                twitter.setIncludeRetweet(false);   // exclude retweet
+                twitter.setSizeLimit_(5000);  // total number of tweet
+                twitter.setHourLimit_(5);  // total time of the query
+                
+                // start query
+                twitter.query(filename, keywords);
+                
+                // keep checking query status until it is finished
+                while (!twitter.isQueryDone_())
+                    Thread.sleep(1000);
+                
+                // sleep awhile before next crawling starts
+                Thread.sleep(10000);
+            }
+        }
+    }
 }
