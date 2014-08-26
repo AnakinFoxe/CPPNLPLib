@@ -80,9 +80,9 @@ public class Twitter {
         
         // read and construct property
         Properties key = new Properties();
-        key.load(getClass().getResourceAsStream("/etc/key.properties"));
+        key.load(getClass().getResourceAsStream("/etc/twitter.properties"));
         
-        // set API keys
+        // set authentication key&token
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
         cb.setOAuthConsumerKey(key.getProperty("ConsumerKey"));

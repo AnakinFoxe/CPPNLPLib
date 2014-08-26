@@ -31,3 +31,6 @@ project-root-directory/
 /target/
 /src/main/resources/etc/key.properties
 /nb-configuration.xml
+/nbactions.xml
+/src/main/resources/etc/twitter.properties
+/src/main/resources/etc/facebook.properties
