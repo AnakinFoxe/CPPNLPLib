@@ -13,7 +13,6 @@ import facebook4j.ResponseList;
 import facebook4j.conf.ConfigurationBuilder;
 import facebook4j.internal.org.json.JSONException;
 import facebook4j.internal.org.json.JSONObject;
-import facebook4j.internal.util.z_F4JInternalParseUtil;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -53,15 +52,15 @@ public class Facebook {
         try {
             ResponseList<Page> results = fb_.searchPages("samsung");
             for (Page result : results) {
-//                String query = "select is_verified from page where page_id=" + result.getId();
-//                JSONObject json = fb_.executeFQL(query).getJSONObject(0);
-//                boolean isVerified = true;
-//                System.out.println(json.get("is_verified").toString());
-//                
-//                if (isVerified)
-//                    System.out.println(result.getName() + ":" + result.getId() + " <official>");
-//                else
-//                    System.out.println(result.getName() + ":" + result.getId());
+                String query = "select is_verified from page where page_id=" + result.getId();
+                JSONObject json = fb_.executeFQL(query).getJSONObject(0);
+                boolean isVerified = true;
+                System.out.println(json.get("is_verified").toString());
+                
+                if (isVerified)
+                    System.out.println(result.getName() + ":" + result.getId() + " <official>");
+                else
+                    System.out.println(result.getName() + ":" + result.getId());
             }
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
