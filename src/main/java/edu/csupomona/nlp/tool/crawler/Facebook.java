@@ -6,64 +6,69 @@
 
 package edu.csupomona.nlp.tool.crawler;
 
-import com.restfb.Connection;
-import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-import com.restfb.json.JsonObject;
-import com.restfb.types.Page;
+import facebook4j.FacebookException;
+import facebook4j.FacebookFactory;
+import facebook4j.Page;
+import facebook4j.ResponseList;
+import facebook4j.conf.ConfigurationBuilder;
+import facebook4j.internal.org.json.JSONException;
+import facebook4j.internal.org.json.JSONObject;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Facebook crawler using RestFB.
- * Originally used Facebook4j but it has problem supporting FQL.
+ * Facebook crawler using Facebook4j
  * @author xing
  */
 public class Facebook {
     
-//    private final facebook4j.Facebook fb_;
-    
-    private final FacebookClient fb_;
+    private final facebook4j.Facebook fb_;
     
     public Facebook() throws IOException {
+        
+        
         // read and construct property
         Properties key = new Properties();
         key.load(getClass().getResourceAsStream("/etc/facebook.properties"));
         
-        // initialization 
-        // using access token obtained from Graph API Explorer (weird way)
-        fb_ = new DefaultFacebookClient(key.getProperty("myToken"));
+        // set authentication key/token
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthAppId(key.getProperty("AppID"))
+                .setOAuthAppSecret(key.getProperty("AppSecret"))
+                .setOAuthAccessToken(key.getProperty("myToken"))
+                .setOAuthPermissions(key.getProperty("Permissions"));
+        
+        // create Facebook4j instance
+        fb_ = new FacebookFactory(cb.build()).getInstance();
+
     }
     
-    public void search(String keyword) {
-        // construct search query for pages using keyword
-        Connection<Page> pageSearch = fb_.fetchConnection("search", Page.class, 
-                Parameter.with("q", keyword), Parameter.with("type", "page"));
-        
-        // get response data
-        List<Page> results = pageSearch.getData();
-        
-        for (Page result : results) {
-            // check if it is official (verified) page
-            String query = "select is_verified from page where page_id=" 
-                    + result.getId();
-            List<JsonObject> isVerified = 
-                    fb_.executeFqlQuery(query, JsonObject.class);
-            if (isVerified.get(0).getBoolean("is_verified")) {
-                System.out.println(result.getName() + ": " + result.getId());
-            } else {
-                System.out.println(result.getName());
+    public void search() throws JSONException {
+        try {
+            ResponseList<Page> results = fb_.searchPages("samsung");
+            for (Page result : results) {
+                String query = "select is_verified from page where page_id=" + result.getId();
+                JSONObject json = fb_.executeFQL(query).getJSONObject(0);
+                boolean isVerified = json.getBoolean("is_verified");
+                
+                if (isVerified)
+                    System.out.println(result.getName() + ":" + result.getId() + " <official>");
+                else
+                    System.out.println(result.getName() + ":" + result.getId());
             }
-            
+        } catch (FacebookException ex) {
+            Logger.getLogger(Facebook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
     }
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, JSONException {
         Facebook fb = new Facebook();
         
-        fb.search("samsung");
+        fb.search();
     }
 
     
