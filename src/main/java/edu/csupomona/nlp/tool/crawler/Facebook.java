@@ -16,12 +16,15 @@ import facebook4j.Paging;
 import facebook4j.Paging.Cursors;
 import facebook4j.Post;
 import facebook4j.RawAPIResponse;
+import facebook4j.Reading;
 import facebook4j.ResponseList;
 import facebook4j.auth.AccessToken;
 import facebook4j.conf.ConfigurationBuilder;
 import facebook4j.internal.org.json.JSONException;
 import facebook4j.internal.org.json.JSONObject;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -34,11 +37,13 @@ import java.util.logging.Logger;
  */
 public class Facebook {
     
+    // Facebook4j instance
     private final facebook4j.Facebook fb_;
     
-    public Facebook() throws IOException {
-        
-        
+    // time stamp for crawling restriction
+    private final Date startTime = new Date();
+    
+    public Facebook() throws IOException {    
         // read and construct property
         Properties key = new Properties();
         key.load(getClass().getResourceAsStream("/etc/facebook.properties"));
@@ -61,7 +66,13 @@ public class Facebook {
 //        AccessToken newToken = refreshToken(appId, appSecret, userToken);
         
         // replace token
-//        fb_.setOAuthAccessToken(newToken);        
+//        fb_.setOAuthAccessToken(newToken);    
+        
+        // Setup time stamp for crawling starting point
+        startTime.setYear(110);
+        startTime.setMonth(0);
+        startTime.setDate(1);
+        System.out.println(startTime.toString());
     }
     
     private AccessToken refreshToken(String appId, String appSecret, String myToken) {
@@ -112,18 +123,24 @@ public class Facebook {
     
     public void getPosts() {
         try {
-            // TODO: won't be able to display all the post
-            // need to figure out how to get next page
-            ResponseList<Post> posts = fb_.getPosts("114219621960016");
+            // cursor is the most recommended way from Facebook.
+            // but I found offset is quite easy for me to implement.
+            ResponseList<Post> posts = fb_.getFeed("114219621960016",
+                    new Reading().offset(24));
+            int count = 1;
             for (Post post : posts) {
-                System.out.println(post.getCreatedTime().toString() + ":" 
+                System.out.println(post.getCreatedTime().toString() + ":"
+                        + count + ":"
                         + " messge:" + post.getMessage()
                         + " story:" + post.getStory()
                         + " caption:" + post.getCaption()
                         + " desc:" + post.getDescription()
                         + " name:" + post.getName()
                         + " id:" + post.getId());
+                count++;
             }
+            
+            System.out.println(posts.size());
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -156,7 +173,7 @@ public class Facebook {
         
 //        fb.search();
 //        fb.getPosts();
-//        fb.getOtherStuff();
+        fb.getOtherStuff();
     }
 
     
