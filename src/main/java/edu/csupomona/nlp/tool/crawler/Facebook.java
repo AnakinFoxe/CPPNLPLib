@@ -6,9 +6,13 @@
 
 package edu.csupomona.nlp.tool.crawler;
 
+import facebook4j.Comment;
 import facebook4j.FacebookException;
 import facebook4j.FacebookFactory;
+import facebook4j.Like;
+import facebook4j.PagableList;
 import facebook4j.Page;
+import facebook4j.Post;
 import facebook4j.ResponseList;
 import facebook4j.conf.ConfigurationBuilder;
 import facebook4j.internal.org.json.JSONException;
@@ -65,10 +69,49 @@ public class Facebook {
         }
     }
     
+    public void getPosts() {
+        try {
+            // TODO: won't be able to display all the post
+            // need to figure out how to get next page
+            ResponseList<Post> posts = fb_.getPosts("114219621960016");
+            for (Post post : posts) {
+                System.out.println(post.getCreatedTime().toString() + ":" 
+                        + " messge:" + post.getMessage()
+                        + " story:" + post.getStory()
+                        + " caption:" + post.getCaption()
+                        + " desc:" + post.getDescription()
+                        + " name:" + post.getName()
+                        + " id:" + post.getId());
+            }
+        } catch (FacebookException ex) {
+            Logger.getLogger(Facebook.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void getOtherStuff() {
+        try {
+            Post post = fb_.getPost("114219621960016_737493369632635");
+            System.out.println(post.getMessage());
+            
+            // TODO: can not get full list also, need to go next page
+            PagableList<Comment> comments = post.getComments();
+            for (Comment comment: comments) 
+                System.out.println(comment.getLikeCount().toString() + ":" 
+                        + comment.getMessage());
+            
+            PagableList<Like> likes = post.getLikes();
+            System.out.println(likes.getCount());
+        } catch (FacebookException ex) {
+            Logger.getLogger(Facebook.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public static void main(String[] args) throws IOException, JSONException {
         Facebook fb = new Facebook();
         
-        fb.search();
+//        fb.search();
+//        fb.getPosts();
+        fb.getOtherStuff();
     }
 
     
