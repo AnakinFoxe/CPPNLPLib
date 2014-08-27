@@ -84,11 +84,11 @@ public class Twitter {
         
         // set authentication key&token
         ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey(key.getProperty("ConsumerKey"));
-        cb.setOAuthConsumerSecret(key.getProperty("ConsumerSecret"));
-        cb.setOAuthAccessToken(key.getProperty("AccessToken"));
-        cb.setOAuthAccessTokenSecret(key.getProperty("AccessTokenSecret"));
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(key.getProperty("ConsumerKey"))
+                .setOAuthConsumerSecret(key.getProperty("ConsumerSecret"))
+                .setOAuthAccessToken(key.getProperty("AccessToken"))
+                .setOAuthAccessTokenSecret(key.getProperty("AccessTokenSecret"));
         
         // create twitter stream
         ts_ = new TwitterStreamFactory(cb.build()).getInstance();
