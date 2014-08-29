@@ -111,9 +111,9 @@ public class Facebook {
         return new AccessToken(userToken);
     }
     
-    public List<Page> getPages(String keyword, boolean onlyVerified) 
+    public HashMap<String, Page> getPages(String keyword, boolean onlyVerified) 
             throws JSONException {
-        List<Page> fullPages = new ArrayList<>();
+        HashMap<String, Page> fullPages = new HashMap<>();
         try {
             // search pages according to keyword
             ResponseList<Page> pages = fb_.searchPages(keyword);
@@ -133,30 +133,35 @@ public class Facebook {
                 // retrieve full information of the page 
                 Page fullPage = fb_.getPage(page.getId());
                 
-                fullPages.add(fullPage);
+                fullPages.put(fullPage.getId(), fullPage);
+                
+                // sleep 1s to meet Facebook 600 calls in 600s limit
+                Thread.sleep(1000);
             }
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
+        } catch (InterruptedException iex) {
         }
         
         return fullPages;
     }
     
-    public List<Post> getPosts(String pageId) {
-        List<Post> fullPosts = new ArrayList<>();
+    public HashMap<String, Post> getPosts(String pageId) {
+        /**
+        * /feed or /posts?
+        * /feed includes everything posted on the wall of page
+        * which includes other users' posts
+        * /posts are solely posted by the owner of the page
+        * 
+        * cursor, time or offset?
+        * Facebook recommends cursor
+        * offset is easy to implement but somehow couldn't get all the posts
+        * using time stamp so far is the best choice
+        */
+        HashMap<String, Post> fullPosts = new HashMap<>();
         try {
-            /**
-             * /feed or /posts?
-             * /feed includes everything posted on the wall of page
-             * which includes other users' posts
-             * /posts are solely posted by the owner of the page
-             * 
-             * cursor, time or offset?
-             * Facebook recommends cursor
-             * offset is easy to implement but somehow couldn't get all the posts
-             * using time stamp so far is the best choice
-             */
+            
             ResponseList<Post> posts = fb_.getPosts(pageId, 
                     new Reading().since(startTime));
             Paging<Post> paging;
@@ -169,7 +174,7 @@ public class Facebook {
                             return fullPosts;
                         
                         // add post to the list
-                        fullPosts.add(post);
+                        fullPosts.put(post.getId(), post);
                     }
                 
                 // get next page
@@ -186,14 +191,13 @@ public class Facebook {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
         } catch (InterruptedException iex) {
-            
         }
         
         return fullPosts;
     }
     
-    public List<Comment> getComments(Post post) {
-        List<Comment> fullComments = new ArrayList<>();
+    public HashMap<String, Comment> getComments(Post post) {
+        HashMap<String, Comment> fullComments = new HashMap<>();
         try {
             // get first few comments using getComments from post
             PagableList<Comment> comments = post.getComments();
@@ -202,40 +206,49 @@ public class Facebook {
                 // NOTE: so far didn't figure out how to get replies 
                 // for the comments
                 for (Comment comment: comments)
-                    fullComments.add(comment);
+                    fullComments.put(comment.getId(), comment);
                 
                 // get next page
                 // NOTE: somehow few comments will not be included.
                 // however, this won't affect much on our research
                 paging = comments.getPaging();
+                
+                // sleep 1s to meet Facebook 600 calls in 600s limit
+                Thread.sleep(1000);
             } while ((paging != null) && 
                     ((comments = fb_.fetchNext(paging)) != null));
             
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
+        } catch (InterruptedException iex) {
         }
         
         return fullComments;
     }
     
-    public List<Like> getLikes(Post post) {
-        List<Like> fullLikes = new ArrayList<>();
+    public HashMap<String, Like> getLikes(Post post) {
+        HashMap<String, Like> fullLikes = new HashMap<>();
         try {
             PagableList<Like> likes = post.getLikes();
             Paging<Like> paging;
             
             do {
                 for (Like like : likes)
-                    fullLikes.add(like);
+                    fullLikes.put(like.getId(), like);
                 
+                // get next page
                 paging = likes.getPaging();
+                
+                // sleep 1s to meet Facebook 600 calls in 600s limit
+                Thread.sleep(1000);
             } while ((paging != null) &&
                     ((likes = fb_.fetchNext(paging)) != null));
             
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
+        } catch (InterruptedException iex) {
         }
         
         return fullLikes;
@@ -245,36 +258,7 @@ public class Facebook {
     public static void main(String[] args) throws IOException, JSONException {
         Facebook fb = new Facebook();
         
-//        fb.search();
-        List<Post> posts = fb.getPosts("7224956785");
-        for (Post post : posts) {
-//            System.out.println(post.getCreatedTime().toString() + ": " 
-//                            + post.getId() + ": "
-//                            + post.getMessage());
-            
-            if ((post.getId().equals("7224956785_10152231268501786"))
-             || (post.getId().equals("7224956785_10152228210731786"))
-             || (post.getId().equals("7224956785_10152223080251786"))) {
-                List<Like> likes = fb.getLikes(post);
-                System.out.println(likes.size() + ":" + post.getMessage());
-                List<Comment> comments = fb.getComments(post);
-                System.out.println(comments.size());
-                
-                for (Comment comment : comments) {
-                    if (comment.getLikeCount() > 0)
-                        System.out.println(comment.getLikeCount().toString() + ":" + comment.getMessage());
-                    else
-                        System.out.println("0:" + comment.getMessage());
-                }
-            }
-            
-        }
-//        List<Comment> comments = fb.getComments();
-//        for (Comment comment : comments) {
-//            System.out.println(comment.getCreatedTime().toString() + ": "
-//                            + comment.getMessage());
-//        }
-//        System.out.println(comments.size());
+
         
     }
 
