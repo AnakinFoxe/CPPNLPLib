@@ -72,7 +72,8 @@ public class Facebook {
         
         // set the default start time
         // 2007-1-1, 00:00
-        startTime = new Date(107, 0, 1, 0, 0);
+        startTime = new Date(114, 5, 1, 0, 0);
+        System.out.println(startTime.toString());
     }
     
     /**
@@ -161,9 +162,15 @@ public class Facebook {
             Paging<Post> paging;
             do {
                 for (Post post : posts) 
-                    if (post.getMessage() != null)
+                    if (post.getMessage() != null) {
+                        // seems getting next page of posts will in fact
+                        // ignore the starting time I used...
+                        if (post.getCreatedTime().before(startTime))
+                            return fullPosts;
+                        
                         // add post to the list
                         fullPosts.add(post);
+                    }
                 
                 // get next page
                 paging = posts.getPaging();
@@ -185,47 +192,90 @@ public class Facebook {
         return fullPosts;
     }
     
-    public void getComments() {
+    public List<Comment> getComments(Post post) {
         List<Comment> fullComments = new ArrayList<>();
         try {
-            Post post = fb_.getPost("114219621960016_737014276347211");
-            System.out.println(post.getMessage());
-            
             // get first few comments using getComments from post
             PagableList<Comment> comments = post.getComments();
             Paging<Comment> paging;
             do {
+                // NOTE: so far didn't figure out how to get replies 
+                // for the comments
                 for (Comment comment: comments)
                     fullComments.add(comment);
                 
+                // get next page
+                // NOTE: somehow few comments will not be included.
+                // however, this won't affect much on our research
                 paging = comments.getPaging();
             } while ((paging != null) && 
                     ((comments = fb_.fetchNext(paging)) != null));
-            for (Comment comment : fullComments) {
-                System.out.println(comment.getMessage());
-            }
-            System.out.println(fullComments.size());
-            
-//            PagableList<Like> likes = post.getLikes();
-//            System.out.println(likes.getCount());
-//            System.out.println(comments.getCount());
-//            Paging<Like> pageLikes = likes.getPaging();
-//            Cursors cursors = pageLikes.getCursors();
             
         } catch (FacebookException ex) {
-            Logger.getLogger(Facebook.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Facebook.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
+        
+        return fullComments;
     }
+    
+    public List<Like> getLikes(Post post) {
+        List<Like> fullLikes = new ArrayList<>();
+        try {
+            PagableList<Like> likes = post.getLikes();
+            Paging<Like> paging;
+            
+            do {
+                for (Like like : likes)
+                    fullLikes.add(like);
+                
+                paging = likes.getPaging();
+            } while ((paging != null) &&
+                    ((likes = fb_.fetchNext(paging)) != null));
+            
+        } catch (FacebookException ex) {
+            Logger.getLogger(Facebook.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+        
+        return fullLikes;
+    }
+    
     
     public static void main(String[] args) throws IOException, JSONException {
         Facebook fb = new Facebook();
         
 //        fb.search();
         List<Post> posts = fb.getPosts("7224956785");
-        for (Post post : posts)
-            System.out.println(post.getCreatedTime().toString() + ": " 
-                            + post.getMessage());
-//        fb.getComments();
+        for (Post post : posts) {
+//            System.out.println(post.getCreatedTime().toString() + ": " 
+//                            + post.getId() + ": "
+//                            + post.getMessage());
+            
+            if ((post.getId().equals("7224956785_10152231268501786"))
+             || (post.getId().equals("7224956785_10152228210731786"))
+             || (post.getId().equals("7224956785_10152223080251786"))) {
+                List<Like> likes = fb.getLikes(post);
+                System.out.println(likes.size() + ":" + post.getMessage());
+                List<Comment> comments = fb.getComments(post);
+                System.out.println(comments.size());
+                
+                for (Comment comment : comments) {
+                    if (comment.getLikeCount() > 0)
+                        System.out.println(comment.getLikeCount().toString() + ":" + comment.getMessage());
+                    else
+                        System.out.println("0:" + comment.getMessage());
+                }
+            }
+            
+        }
+//        List<Comment> comments = fb.getComments();
+//        for (Comment comment : comments) {
+//            System.out.println(comment.getCreatedTime().toString() + ": "
+//                            + comment.getMessage());
+//        }
+//        System.out.println(comments.size());
+        
     }
 
     
