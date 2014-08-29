@@ -24,6 +24,7 @@ import facebook4j.internal.org.json.JSONException;
 import facebook4j.internal.org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,56 +73,6 @@ public class Facebook {
         // set the default start time
         // 2007-1-1, 00:00
         startTime = new Date(107, 0, 1, 0, 0);
-    }
-    
-    /**
-     * for storing info of posts and comments.
-     */
-    private class FacebookEntry {
-        String type_;        // P: post, C: comment
-        Date createdTime_;   // time of creation
-        String id_;          // id of the entry from Facebook
-        Integer numLikes_;   // number of likes
-        
-        public FacebookEntry(String type_, Date createdTime_, 
-                String id_, Integer numLikes_) {
-            this.type_ = type_;
-            this.createdTime_ = createdTime_;
-            this.id_ = id_;
-            this.numLikes_ = numLikes_;
-        }
-        
-        public String getType() {
-            return type_;
-        }
-
-        public void setType(String type) {
-            this.type_ = type;
-        }
-
-        public Date getCreatedTime() {
-            return createdTime_;
-        }
-
-        public void setCreatedTime(Date createdTime) {
-            this.createdTime_ = createdTime;
-        }
-
-        public String getId() {
-            return id_;
-        }
-
-        public void setId(String id) {
-            this.id_ = id;
-        }
-
-        public Integer getNumLikes() {
-            return numLikes_;
-        }
-
-        public void setNumLikes(Integer numLikes) {
-            this.numLikes_ = numLikes;
-        }
     }
     
     /**
@@ -194,28 +145,41 @@ public class Facebook {
     public List<Post> getPosts(String pageId) {
         List<Post> fullPosts = new ArrayList<>();
         try {
-            // cursor is the most recommended way from Facebook.
-            // but I found offset is quite easy for me to implement.
-            int offset = 0;
-            ResponseList<Post> posts;
-            while (( posts = fb_.getFeed(pageId, 
-                    new Reading().offset(offset))).size() > 0) {
-                for (Post post : posts) {
-                    // check post creation time
-                    if (post.getCreatedTime().before(startTime)) 
-                        return fullPosts;
-                    
-                    // add post to the list
-                    fullPosts.add(post);
-                }
+            /**
+             * /feed or /posts?
+             * /feed includes everything posted on the wall of page
+             * which includes other users' posts
+             * /posts are solely posted by the owner of the page
+             * 
+             * cursor, time or offset?
+             * Facebook recommends cursor
+             * offset is easy to implement but somehow couldn't get all the posts
+             * using time stamp so far is the best choice
+             */
+            ResponseList<Post> posts = fb_.getPosts(pageId, 
+                    new Reading().since(startTime));
+            Paging<Post> paging;
+            do {
+                for (Post post : posts) 
+                    if (post.getMessage() != null)
+                        // add post to the list
+                        fullPosts.add(post);
                 
-                // move offset
-                offset += 25;   // 25 is default size of responselist
-            }
+                // get next page
+                paging = posts.getPaging();
+
+                // sleep 1s to meet Facebook 600 calls in 600s limit
+                Thread.sleep(1000);
+
+                System.out.println(posts.get(0).getCreatedTime().toString() + ", " + fullPosts.size());
+            } while ((paging != null) && 
+                    ((posts = fb_.fetchNext(paging)) != null));
             
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
+        } catch (InterruptedException iex) {
+            
         }
         
         return fullPosts;
