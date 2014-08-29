@@ -43,7 +43,10 @@ public class Facebook {
     private final facebook4j.Facebook fb_;
     
     // time stamp as crawling starting point
-    private final Date startTime;
+    private Date startTime;
+    
+    // maximum times of retries
+    private int maxRetries;
     
     public Facebook() throws IOException {    
         // read and construct property
@@ -73,7 +76,29 @@ public class Facebook {
         // set the default start time
         // 2007-1-1, 00:00
         startTime = new Date(114, 5, 1, 0, 0);
-        System.out.println(startTime.toString());
+        
+        // set the default maximum number of retries
+        maxRetries = 5;
+        
+        // trace
+        System.out.println("Start Time Stamp: " + startTime.toString() 
+                        + ", Maximum Retries: " + maxRetries);
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public int getMaxRetries() {
+        return maxRetries;
+    }
+
+    public void setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
     }
     
     /**
@@ -111,6 +136,17 @@ public class Facebook {
         return new AccessToken(userToken);
     }
     
+    /**
+     * Will be frequently used for avoiding Facebook's 600 calls in 600s limit.
+     * Not really cares much about the exception.
+     */
+    private void pause(int sec) {
+        try {
+            Thread.sleep(sec * 1000);
+        } catch (InterruptedException iex) {
+        }
+    }
+    
     public HashMap<String, Page> getPages(String keyword, boolean onlyVerified) 
             throws JSONException {
         HashMap<String, Page> fullPages = new HashMap<>();
@@ -135,19 +171,18 @@ public class Facebook {
                 
                 fullPages.put(fullPage.getId(), fullPage);
                 
-                // sleep 1s to meet Facebook 600 calls in 600s limit
-                Thread.sleep(1000);
+                // to reduce speed
+                pause(1);
             }
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
-        } catch (InterruptedException iex) {
-        }
+        } 
         
         return fullPages;
     }
     
-    public HashMap<String, Post> getPosts(String pageId) {
+    public HashMap<String, Post> getPosts(Page page) {
         /**
         * /feed or /posts?
         * /feed includes everything posted on the wall of page
@@ -160,96 +195,145 @@ public class Facebook {
         * using time stamp so far is the best choice
         */
         HashMap<String, Post> fullPosts = new HashMap<>();
-        try {
-            
-            ResponseList<Post> posts = fb_.getPosts(pageId, 
+        ResponseList<Post> posts = null;
+        // start getting posts of the page
+        for (int n = 1; n <= maxRetries; ++n) {
+            try {
+                posts = fb_.getPosts(page.getId(), 
                     new Reading().since(startTime));
-            Paging<Post> paging;
-            do {
-                for (Post post : posts) 
-                    if (post.getMessage() != null) {
-                        // seems getting next page of posts will in fact
-                        // ignore the starting time I used...
-                        if (post.getCreatedTime().before(startTime))
-                            return fullPosts;
-                        
-                        // add post to the list
-                        fullPosts.put(post.getId(), post);
-                    }
-                
-                // get next page
-                paging = posts.getPaging();
-
-                // sleep 1s to meet Facebook 600 calls in 600s limit
-                Thread.sleep(1000);
-
-                System.out.println(posts.get(0).getCreatedTime().toString() + ", " + fullPosts.size());
-            } while ((paging != null) && 
-                    ((posts = fb_.fetchNext(paging)) != null));
-            
-        } catch (FacebookException ex) {
-            Logger.getLogger(Facebook.class.getName())
+            } catch (FacebookException ex) {    // exception & retry
+                Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
-        } catch (InterruptedException iex) {
+                pause(5*n);
+                System.out.println("Starting retry... " 
+                        + n + "/" + maxRetries);
+                continue;
+            } 
+            break;
         }
+        
+        // eventually failed
+        if (posts == null)
+            return fullPosts;
+        
+        // get rest of posts
+        Paging<Post> paging;
+        do {
+            for (Post post : posts) 
+                if (post.getMessage() != null) {
+                    // seems getting next page of posts will in fact
+                    // ignore the starting time I used...
+                    if (post.getCreatedTime().before(startTime))
+                        return fullPosts;
+
+                    // add post to the list
+                    fullPosts.put(post.getId(), post);
+                }
+            
+            // get next page
+            paging = posts.getPaging();
+
+            // to reduce speed
+            pause(1);
+
+            // trace
+            System.out.println(posts.get(0).getCreatedTime().toString() 
+                    + ": " + fullPosts.size());
+            
+            // get next page
+            if (paging != null) 
+                for (int n = 1; n <= maxRetries; ++n) {
+                    try {
+                        posts = fb_.fetchNext(paging);
+                    } catch (FacebookException ex) {    // exception & retry
+                        Logger.getLogger(Facebook.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                        pause(5*n);
+                        System.out.println("Starting retry... " 
+                                + n + "/" + maxRetries);
+                        continue;
+                    } 
+                    break;
+                }
+            
+        } while ((paging != null) && (posts != null));
         
         return fullPosts;
     }
     
     public HashMap<String, Comment> getComments(Post post) {
         HashMap<String, Comment> fullComments = new HashMap<>();
-        try {
-            // get first few comments using getComments from post
-            PagableList<Comment> comments = post.getComments();
-            Paging<Comment> paging;
-            do {
-                // NOTE: so far didn't figure out how to get replies 
-                // for the comments
-                for (Comment comment: comments)
-                    fullComments.put(comment.getId(), comment);
-                
-                // get next page
-                // NOTE: somehow few comments will not be included.
-                // however, this won't affect much on our research
-                paging = comments.getPaging();
-                
-                // sleep 1s to meet Facebook 600 calls in 600s limit
-                Thread.sleep(1000);
-            } while ((paging != null) && 
-                    ((comments = fb_.fetchNext(paging)) != null));
+        
+        // get first few comments using getComments from post
+        PagableList<Comment> comments = post.getComments();
+        Paging<Comment> paging;
+        do {
+            // NOTE: so far didn't figure out how to get replies 
+            // for the comments
+            for (Comment comment: comments)
+                fullComments.put(comment.getId(), comment);
+
+            // get next page
+            // NOTE: somehow few comments will not be included.
+            // however, this won't affect much on our research
+            paging = comments.getPaging();
+
+            // to reduce speed
+            pause(1);
             
-        } catch (FacebookException ex) {
-            Logger.getLogger(Facebook.class.getName())
-                    .log(Level.SEVERE, null, ex);
-        } catch (InterruptedException iex) {
-        }
+            // get next page
+            if (paging != null)
+                for (int n = 1; n <= maxRetries; ++n) {
+                    try {
+                        comments = fb_.fetchNext(paging);
+                    } catch (FacebookException ex) {    // exception & retry
+                        Logger.getLogger(Facebook.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                        pause(5*n);
+                        System.out.println("Starting retry... " 
+                                + n + "/" + maxRetries);
+                        continue;
+                    } 
+                    break;
+                }
+        } while ((paging != null) && (comments != null));
         
         return fullComments;
     }
     
     public HashMap<String, Like> getLikes(Post post) {
         HashMap<String, Like> fullLikes = new HashMap<>();
-        try {
-            PagableList<Like> likes = post.getLikes();
-            Paging<Like> paging;
+        PagableList<Like> likes = post.getLikes();
+        Paging<Like> paging;
+
+        do {
+            for (Like like : likes)
+                fullLikes.put(like.getId(), like);
+
+            // get next page
+            paging = likes.getPaging();
+
+            // to reduce speed
+            pause(1);
             
-            do {
-                for (Like like : likes)
-                    fullLikes.put(like.getId(), like);
-                
-                // get next page
-                paging = likes.getPaging();
-                
-                // sleep 1s to meet Facebook 600 calls in 600s limit
-                Thread.sleep(1000);
-            } while ((paging != null) &&
-                    ((likes = fb_.fetchNext(paging)) != null));
+            // get next page
+            if (paging != null)
+                for (int n = 1; n <= maxRetries; ++n) {
+                    try {
+                        likes = fb_.fetchNext(paging);
+                    } catch (FacebookException ex) {    // exception & retry
+                        Logger.getLogger(Facebook.class.getName())
+                            .log(Level.SEVERE, null, ex);
+                        pause(5*n);
+                        System.out.println("Starting retry... " 
+                                + n + "/" + maxRetries);
+                        continue;
+                    } 
+                    break;
+                }
+        } while ((paging != null) && (likes != null));
             
-        } catch (FacebookException ex) {
-            Logger.getLogger(Facebook.class.getName())
-                    .log(Level.SEVERE, null, ex);
-        } catch (InterruptedException iex) {
-        }
+        
         
         return fullLikes;
     }
