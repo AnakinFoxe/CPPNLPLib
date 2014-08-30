@@ -426,7 +426,8 @@ public class Facebook {
         // crawl each page
         for (String pageId : pages.keySet()) {
             String filename = pageId + "_" 
-                    + pages.get(pageId).getName().replaceAll(" ", "_") 
+                    + pages.get(pageId).getName().replaceAll(" ", "_") + "_"
+                    + pages.get(pageId).getLikes().toString()
                     + ".txt";
             
             String fullPath = BASE_DIR_ + keyword + "/" + filename;
