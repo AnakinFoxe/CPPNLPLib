@@ -53,6 +53,9 @@ public class Facebook {
     // base dir
     private final String BASE_DIR_ = "./data/";
     
+    // step seconds
+    private final int STEP_SEC_ = 7;
+    
     public Facebook() throws IOException {    
         // read and construct property
         Properties key = new Properties();
@@ -250,7 +253,7 @@ public class Facebook {
             } catch (FacebookException ex) {    // exception & retry
                 Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
-                pause(5*n);
+                pause(STEP_SEC_*n);
                 System.out.println("Starting retry... " 
                         + n + "/" + maxRetries_);
                 continue;
@@ -283,7 +286,8 @@ public class Facebook {
             pause(1);
 
             // trace
-            System.out.println(posts.get(0).getCreatedTime().toString() 
+            if (posts.size() > 0)
+                System.out.println(posts.get(0).getCreatedTime().toString() 
                     + ": " + fullPosts.size());
             
             // get next page
@@ -294,7 +298,7 @@ public class Facebook {
                     } catch (FacebookException ex) {    // exception & retry
                         Logger.getLogger(Facebook.class.getName())
                             .log(Level.SEVERE, null, ex);
-                        pause(5*n);
+                        pause(STEP_SEC_*n);
                         System.out.println("Starting retry... " 
                                 + n + "/" + maxRetries_);
                         continue;
@@ -345,7 +349,7 @@ public class Facebook {
                     } catch (FacebookException ex) {    // exception & retry
                         Logger.getLogger(Facebook.class.getName())
                             .log(Level.SEVERE, null, ex);
-                        pause(5*n);
+                        pause(STEP_SEC_*n);
                         System.out.println("Starting retry... " 
                                 + n + "/" + maxRetries_);
                         continue;
@@ -392,7 +396,7 @@ public class Facebook {
                     } catch (FacebookException ex) {    // exception & retry
                         Logger.getLogger(Facebook.class.getName())
                             .log(Level.SEVERE, null, ex);
-                        pause(5*n);
+                        pause(STEP_SEC_*n);
                         System.out.println("Starting retry... " 
                                 + n + "/" + maxRetries_);
                         continue;
