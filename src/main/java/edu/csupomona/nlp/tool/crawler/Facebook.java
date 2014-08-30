@@ -76,11 +76,12 @@ public class Facebook {
 //        fb_.setOAuthAccessToken(newToken);  
         
         // set the default start time
-        // 2007-1-1, 00:00
-        startTime_ = new Date(114, 5, 1, 0, 0);
+        // 2007-6-1, 00:00 
+        // the year of Apple iPhone
+        startTime_ = new Date(107, 5, 1, 0, 0);
         
         // set the default maximum number of retries
-        maxRetries_ = 5;
+        maxRetries_ = 10;
         
         // trace
         System.out.println("Start Time Stamp: " + startTime_.toString() 
@@ -149,6 +150,13 @@ public class Facebook {
         }
     }
     
+    /**
+     * Get all the Pages match the searching keyword.
+     * @param keyword               Keyword for search
+     * @param onlyVerified          Return only verified pages (currently NA)
+     * @return                      HashMap of Pages
+     * @throws JSONException
+     */
     public HashMap<String, Page> getPages(String keyword, boolean onlyVerified) 
             throws JSONException {
         HashMap<String, Page> fullPages = new HashMap<>();
@@ -212,6 +220,11 @@ public class Facebook {
         return fullPages;
     }
     
+    /**
+     * Get all the Posts posted on the wall of the page by the page owner.
+     * @param page                  Page to be parsed
+     * @return                      HashMap of Posts
+     */
     public HashMap<String, Post> getPosts(Page page) {
         /**
         * /feed or /posts?
@@ -291,6 +304,13 @@ public class Facebook {
         return fullPosts;
     }
     
+    /**
+     * Get all the Comments for the Post. 
+     * The replies to the comments are not included, because Facebook does not
+     * provide such API query.
+     * @param post              Post to be parsed
+     * @return                  HashMap of Comments
+     */
     public HashMap<String, Comment> getComments(Post post) {
         HashMap<String, Comment> fullComments = new HashMap<>();
         
@@ -334,6 +354,13 @@ public class Facebook {
         return fullComments;
     }
     
+    /**
+     * Get all the Likes for the Post.
+     * Specific for getting likes of the post. As for comment, getLikeCount() 
+     * could be used.
+     * @param post              Post to be parsed
+     * @return                  HashMap of Likes
+     */
     public HashMap<String, Like> getLikes(Post post) {
         HashMap<String, Like> fullLikes = new HashMap<>();
         PagableList<Like> likes = post.getLikes();
@@ -377,6 +404,14 @@ public class Facebook {
         return fullLikes;
     }
     
+    /**
+     * Start crawling Facebook using keyword.
+     * Crawled data includes information for Posts and their Comments.
+     * Will be stored in the file for each Page.
+     * @param keyword               Keyword for searching
+     * @throws JSONException
+     * @throws IOException
+     */
     public void crawl(String keyword) throws JSONException, IOException {
         // get pages according to keyword
         HashMap<String, Page> pages = getPages(keyword, true);
@@ -433,8 +468,6 @@ public class Facebook {
                     }
                 }
             }
-            
-            break;  // try one page first
         }
     }
     
