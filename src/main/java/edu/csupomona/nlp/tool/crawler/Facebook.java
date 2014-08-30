@@ -20,6 +20,8 @@ import facebook4j.ResponseList;
 import facebook4j.auth.AccessToken;
 import facebook4j.conf.ConfigurationBuilder;
 import facebook4j.internal.org.json.JSONException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -309,6 +311,9 @@ public class Facebook {
             // to reduce speed
             pause(1);
             
+            // trace
+            System.out.println("Getting comments... " + fullComments.size());
+            
             // get next page
             if (paging != null)
                 for (int n = 1; n <= maxRetries_; ++n) {
@@ -334,6 +339,9 @@ public class Facebook {
         PagableList<Like> likes = post.getLikes();
         Paging<Like> paging;
 
+        // trace
+        System.out.print("Getting Likes... ");
+        
         do {
             for (Like like : likes)
                 fullLikes.put(like.getId(), like);
@@ -343,6 +351,8 @@ public class Facebook {
 
             // to reduce speed
             pause(1);
+            
+            
             
             // get next page
             if (paging != null)
@@ -361,12 +371,13 @@ public class Facebook {
                 }
         } while ((paging != null) && (likes != null));
             
-        
+        // trace
+        System.out.print(fullLikes.size() + "\n");
         
         return fullLikes;
     }
     
-    public void crawl(String keyword) throws JSONException {
+    public void crawl(String keyword) throws JSONException, IOException {
         // get pages according to keyword
         HashMap<String, Page> pages = getPages(keyword, true);
         
@@ -376,15 +387,55 @@ public class Facebook {
                     + pages.get(pageId).getName().replaceAll(" ", "_") 
                     + ".txt";
             
-            System.out.println(filename);
+            String fullPath = BASE_DIR_ + keyword + "/" + filename;
+            System.out.println(fullPath);
+            
+            // start writing
+            FileWriter fw = new FileWriter(fullPath);
+            try (BufferedWriter bw = new BufferedWriter(fw)) {
+                // get posts from the page
+                HashMap<String, Post> posts = getPosts(pages.get(pageId));
+                
+                for (String postId : posts.keySet()) {
+                    Post post = posts.get(postId);
+                    
+                    // get likes
+                    HashMap<String, Like> likes = getLikes(post);
+                    
+                    int shareCount = (post.getSharesCount()!=null ? 
+                                        post.getSharesCount() : 0);
+                    // write post information
+                    String line = "[P]["                            // type
+                        + post.getCreatedTime().toString() + "]["   // date
+                        + post.getId() + "]["                       // id
+                        + likes.size() + "]["                       // number of likes
+                        + shareCount + "]:"                         // number of shares
+                        + post.getMessage()                         // content
+                        + "\n";
+                    System.out.println(line);
+                    bw.write(line);
+                    
+                    // get comments
+                    HashMap<String, Comment> comments = getComments(post);
+                    
+                    // write comment information
+                    for (String comId : comments.keySet()) {
+                        Comment comment = comments.get(comId);
+                        
+                        line = "[C]["                                       // type
+                            + comment.getCreatedTime().toString() + "]["    // date
+                            + comment.getId() + "]["                        // id
+                            + comment.getLikeCount().toString() + "]:"      // number of likes
+                            + comment.getMessage()
+                            + "\n";
+                        System.out.println(line);
+                        bw.write(line);
+                    }
+                }
+            }
+            
+            break;  // try one page first
         }
-    }
-   
-    public static void main(String[] args) 
-            throws IOException, JSONException {
-        Facebook fb = new Facebook();
-        
-        fb.crawl("samsung");
     }
     
 }
