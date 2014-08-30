@@ -13,7 +13,6 @@ import facebook4j.Like;
 import facebook4j.PagableList;
 import facebook4j.Page;
 import facebook4j.Paging;
-import facebook4j.Paging.Cursors;
 import facebook4j.Post;
 import facebook4j.RawAPIResponse;
 import facebook4j.Reading;
@@ -21,10 +20,8 @@ import facebook4j.ResponseList;
 import facebook4j.auth.AccessToken;
 import facebook4j.conf.ConfigurationBuilder;
 import facebook4j.internal.org.json.JSONException;
-import facebook4j.internal.org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +40,13 @@ public class Facebook {
     private final facebook4j.Facebook fb_;
     
     // time stamp as crawling starting point
-    private Date startTime;
+    private Date startTime_;
     
     // maximum times of retries
-    private int maxRetries;
+    private int maxRetries_;
+    
+    // base dir
+    private final String BASE_DIR_ = "./data/";
     
     public Facebook() throws IOException {    
         // read and construct property
@@ -54,7 +54,7 @@ public class Facebook {
         key.load(getClass().getResourceAsStream("/etc/facebook.properties"));
         String appId = key.getProperty("AppID");
         String appSecret = key.getProperty("AppSecret");
-        String userToken = key.getProperty("UserToken");
+        String userToken = key.getProperty("AccessToken");
         
         // set authentication key/token
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -75,30 +75,30 @@ public class Facebook {
         
         // set the default start time
         // 2007-1-1, 00:00
-        startTime = new Date(114, 5, 1, 0, 0);
+        startTime_ = new Date(114, 5, 1, 0, 0);
         
         // set the default maximum number of retries
-        maxRetries = 5;
+        maxRetries_ = 5;
         
         // trace
-        System.out.println("Start Time Stamp: " + startTime.toString() 
-                        + ", Maximum Retries: " + maxRetries);
+        System.out.println("Start Time Stamp: " + startTime_.toString() 
+                        + ", Maximum Retries: " + maxRetries_);
     }
 
     public Date getStartTime() {
-        return startTime;
+        return startTime_;
     }
 
     public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+        this.startTime_ = startTime;
     }
 
     public int getMaxRetries() {
-        return maxRetries;
+        return maxRetries_;
     }
 
     public void setMaxRetries(int maxRetries) {
-        this.maxRetries = maxRetries;
+        this.maxRetries_ = maxRetries;
     }
     
     /**
@@ -150,20 +150,27 @@ public class Facebook {
     public HashMap<String, Page> getPages(String keyword, boolean onlyVerified) 
             throws JSONException {
         HashMap<String, Page> fullPages = new HashMap<>();
+        int totalLikes = 0;
         try {
             // search pages according to keyword
             ResponseList<Page> pages = fb_.searchPages(keyword);
+            System.out.println(pages.size());
+            int idx = 0;
             for (Page page : pages) {
-                // skip unverified pages only this flag is on
                 if (onlyVerified) {
+                    // TOTALLY GAVE UP DUE TO UNKNOWN REASON OF UNABLE TO 
+                    // ACCESS FQL WITH APP ACCESS TOKEN OR USER ACCESS TOKEN
                     // is_verified field is only accessable through FQL
-                    String query = "select is_verified from page where page_id=" 
-                            + page.getId();
-                    JSONObject json = fb_.executeFQL(query).getJSONObject(0);
-                    boolean isVerified = json.getBoolean("is_verified");
-                
-                    if (!isVerified)
-                        continue;
+//                    String query = "select is_verified from page where page_id=" 
+//                            + page.getId();
+//                    JSONObject json = fb_.executeFQL(query).getJSONObject(0);
+//                    boolean isVerified = json.getBoolean("is_verified");
+//                
+//                    // reduce speed
+//                    pause(1);
+//                    
+//                    if (!isVerified)
+//                        continue;
                 }
                 
                 // retrieve full information of the page 
@@ -171,13 +178,34 @@ public class Facebook {
                 
                 fullPages.put(fullPage.getId(), fullPage);
                 
+                // records number of likes
+                totalLikes += fullPage.getLikes();
+                
                 // to reduce speed
-                pause(1);
+//                pause(1);
+                
+                System.out.println(idx++);
             }
         } catch (FacebookException ex) {
             Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
         } 
+        
+        
+        
+        // post processing. only keep pages with number of likes above average 
+        int average = totalLikes / fullPages.size();
+        System.out.println("Average=" + average);
+        List<String> removePageIds = new ArrayList<>();
+        for (String pageId : fullPages.keySet()) 
+            if (fullPages.get(pageId).getLikes() < average) {
+                System.out.println("RM: " + fullPages.get(pageId).getName() 
+                        + " [L=" + fullPages.get(pageId).getLikes().toString() + "]");
+                removePageIds.add(pageId);
+            }
+        
+        for (String pageId : removePageIds)
+            fullPages.remove(pageId);
         
         return fullPages;
     }
@@ -197,16 +225,16 @@ public class Facebook {
         HashMap<String, Post> fullPosts = new HashMap<>();
         ResponseList<Post> posts = null;
         // start getting posts of the page
-        for (int n = 1; n <= maxRetries; ++n) {
+        for (int n = 1; n <= maxRetries_; ++n) {
             try {
                 posts = fb_.getPosts(page.getId(), 
-                    new Reading().since(startTime));
+                    new Reading().since(startTime_));
             } catch (FacebookException ex) {    // exception & retry
                 Logger.getLogger(Facebook.class.getName())
                     .log(Level.SEVERE, null, ex);
                 pause(5*n);
                 System.out.println("Starting retry... " 
-                        + n + "/" + maxRetries);
+                        + n + "/" + maxRetries_);
                 continue;
             } 
             break;
@@ -223,7 +251,7 @@ public class Facebook {
                 if (post.getMessage() != null) {
                     // seems getting next page of posts will in fact
                     // ignore the starting time I used...
-                    if (post.getCreatedTime().before(startTime))
+                    if (post.getCreatedTime().before(startTime_))
                         return fullPosts;
 
                     // add post to the list
@@ -242,7 +270,7 @@ public class Facebook {
             
             // get next page
             if (paging != null) 
-                for (int n = 1; n <= maxRetries; ++n) {
+                for (int n = 1; n <= maxRetries_; ++n) {
                     try {
                         posts = fb_.fetchNext(paging);
                     } catch (FacebookException ex) {    // exception & retry
@@ -250,7 +278,7 @@ public class Facebook {
                             .log(Level.SEVERE, null, ex);
                         pause(5*n);
                         System.out.println("Starting retry... " 
-                                + n + "/" + maxRetries);
+                                + n + "/" + maxRetries_);
                         continue;
                     } 
                     break;
@@ -283,7 +311,7 @@ public class Facebook {
             
             // get next page
             if (paging != null)
-                for (int n = 1; n <= maxRetries; ++n) {
+                for (int n = 1; n <= maxRetries_; ++n) {
                     try {
                         comments = fb_.fetchNext(paging);
                     } catch (FacebookException ex) {    // exception & retry
@@ -291,7 +319,7 @@ public class Facebook {
                             .log(Level.SEVERE, null, ex);
                         pause(5*n);
                         System.out.println("Starting retry... " 
-                                + n + "/" + maxRetries);
+                                + n + "/" + maxRetries_);
                         continue;
                     } 
                     break;
@@ -318,7 +346,7 @@ public class Facebook {
             
             // get next page
             if (paging != null)
-                for (int n = 1; n <= maxRetries; ++n) {
+                for (int n = 1; n <= maxRetries_; ++n) {
                     try {
                         likes = fb_.fetchNext(paging);
                     } catch (FacebookException ex) {    // exception & retry
@@ -326,7 +354,7 @@ public class Facebook {
                             .log(Level.SEVERE, null, ex);
                         pause(5*n);
                         System.out.println("Starting retry... " 
-                                + n + "/" + maxRetries);
+                                + n + "/" + maxRetries_);
                         continue;
                     } 
                     break;
@@ -338,13 +366,25 @@ public class Facebook {
         return fullLikes;
     }
     
-    
-    public static void main(String[] args) throws IOException, JSONException {
+    public void crawl(String keyword) throws JSONException {
+        // get pages according to keyword
+        HashMap<String, Page> pages = getPages(keyword, true);
+        
+        // crawl each page
+        for (String pageId : pages.keySet()) {
+            String filename = pageId + "_" 
+                    + pages.get(pageId).getName().replaceAll(" ", "_") 
+                    + ".txt";
+            
+            System.out.println(filename);
+        }
+    }
+   
+    public static void main(String[] args) 
+            throws IOException, JSONException {
         Facebook fb = new Facebook();
         
-
-        
+        fb.crawl("samsung");
     }
-
     
 }
