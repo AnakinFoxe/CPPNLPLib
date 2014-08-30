@@ -23,7 +23,10 @@ import facebook4j.internal.org.json.JSONException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -467,6 +470,12 @@ public class Facebook {
                         bw.write(line);
                     }
                 }
+                
+                // save the time stamp
+                DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                bw.write("#### Finished at: " 
+                        + df.format(Calendar.getInstance().getTime()) 
+                        + " ####\n");
             }
         }
     }
