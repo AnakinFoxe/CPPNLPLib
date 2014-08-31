@@ -62,7 +62,7 @@ public class Facebook {
         key.load(getClass().getResourceAsStream("/etc/facebook.properties"));
         String appId = key.getProperty("AppID");
         String appSecret = key.getProperty("AppSecret");
-        String userToken = key.getProperty("AccessToken");
+        String userToken = key.getProperty("UserToken");
         
         // set authentication key/token
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -76,10 +76,10 @@ public class Facebook {
         fb_ = new FacebookFactory(cb.build()).getInstance();
         
         // obtain long-lived token
-//        AccessToken newToken = refreshToken(appId, appSecret, userToken);
+        AccessToken newToken = refreshToken(appId, appSecret, userToken);
         
         // replace token
-//        fb_.setOAuthAccessToken(newToken);  
+        fb_.setOAuthAccessToken(newToken);  
         
         // set the default start time
         // 2007-6-1, 00:00 
@@ -420,6 +420,9 @@ public class Facebook {
      * @throws IOException
      */
     public void crawl(String keyword) throws JSONException, IOException {
+        //trace
+        System.out.println("Start crawling with keyword=" + keyword);
+        
         // get pages according to keyword
         HashMap<String, Page> pages = getPages(keyword, true);
         
