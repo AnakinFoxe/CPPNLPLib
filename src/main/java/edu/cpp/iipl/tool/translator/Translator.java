@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.tool.translator;
+package edu.cpp.iipl.tool.translator;
 
-import edu.csupomona.nlp.util.FileProcessor;
-import edu.csupomona.nlp.util.StanfordTools;
+import edu.cpp.iipl.util.FileProcessor;
+import edu.cpp.iipl.util.StanfordTools;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;

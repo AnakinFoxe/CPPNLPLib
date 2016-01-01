@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.tool.crawler;
+package edu.cpp.iipl.tool.crawler;
 
 import facebook4j.Comment;
 import facebook4j.FacebookException;

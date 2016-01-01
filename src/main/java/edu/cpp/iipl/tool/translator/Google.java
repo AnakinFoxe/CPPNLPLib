@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.tool.translator;
+package edu.cpp.iipl.tool.translator;
 
 import java.io.BufferedReader;
 import java.io.IOException;

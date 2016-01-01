@@ -6,7 +6,7 @@ Cal Poly Pomona NLP Lib
   Tools
   
     Crawler
-      Amazon - using Amazon RESTful API
+      Amazon - using Amazon RESTful API (moved to https://github.com/AnakinFoxe/AmazonCrawler)
       Facebook - using Facebook4j
       Twitter - using Twitter4j
       

@@ -8,7 +8,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.tool.crawler;
+package edu.cpp.iipl.tool.crawler;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

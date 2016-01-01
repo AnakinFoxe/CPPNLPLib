@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>edu.csupomona.nlp</groupId>
-    <artifactId>CSUPomonaNLPLib</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>edu.cpp.iipl</groupId>
+    <artifactId>nlp-lib</artifactId>
+    <version>0.1</version>
     <packaging>jar</packaging>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.github.rholder</groupId>
@@ -19,7 +21,7 @@
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>3.4</version>
+            <version>3.5.2</version>
         </dependency>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
@@ -38,10 +40,13 @@
             <version>20140107</version>
         </dependency>
         <dependency>
-            <!-- this library was added locally -->
+            <!-- This library was added locally.
+                You need to download ws4j jar file and place it in the lib folder. -->
             <groupId>edu.cmu.lti.ws4j</groupId>
             <artifactId>ws4j</artifactId>
             <version>1.0.1</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/ws4j-1.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.twitter4j</groupId>

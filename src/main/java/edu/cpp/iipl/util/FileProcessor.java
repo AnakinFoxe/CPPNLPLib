@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.util;
+package edu.cpp.iipl.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -130,7 +130,7 @@ public class FileProcessor {
      * @throws IOException
      */
     protected List<String> processFile(String filePath) 
-            throws FileNotFoundException, IOException  {
+            throws IOException  {
         List<String> content = new ArrayList<>();
         
         FileReader fr = new FileReader(filePath);

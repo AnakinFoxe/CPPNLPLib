@@ -4,26 +4,21 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.util;
+package edu.cpp.iipl.util;
 
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.sentiment.SentimentCoreAnnotations.AnnotatedTree;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,19 +52,19 @@ public class StanfordTools {
      *                  3 = positive,
      *                  4 = very positive
      */
-    public int sentiment(String sentence) {
-        if (sentence == null || sentence.length() == 0)
-            return 2;
-
-        Annotation ano = pipeline.process(sentence);
-
-        for (CoreMap sent : ano.get(SentencesAnnotation.class)) {
-            Tree tree = sent.get(AnnotatedTree.class);
-            return RNNCoreAnnotations.getPredictedClass(tree);
-        }
-
-        return 2;
-    }
+//    public int sentiment(String sentence) {
+//        if (sentence == null || sentence.length() == 0)
+//            return 2;
+//
+//        Annotation ano = pipeline.process(sentence);
+//
+//        for (CoreMap sent : ano.get(SentencesAnnotation.class)) {
+//            Tree tree = sent.get(AnnotatedTree.class);
+//            return RNNCoreAnnotations.getPredictedClass(tree);
+//        }
+//
+//        return 2;
+//    }
 	
     /**
      * Lemmatize the given word
@@ -132,17 +127,17 @@ public class StanfordTools {
      * Dependency parse tree 
      * @param text      Input string text
      */
-    public void parser(String text) {
-        Annotation document = new Annotation(text);
-        pipeline.annotate(document);
-
-        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-        for(CoreMap sentence: sentences) {			
-            SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-
-            System.out.println(dependencies.toString("plain"));
-        }
-    }
+//    public void parser(String text) {
+//        Annotation document = new Annotation(text);
+//        pipeline.annotate(document);
+//
+//        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+//        for(CoreMap sentence: sentences) {
+//            SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+//
+//            System.out.println(dependencies.toString("plain"));
+//        }
+//    }
     
     /**
      * Detect and break input text into sentences
