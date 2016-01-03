@@ -22,7 +22,6 @@ Cal Poly Pomona NLP Lib
     Preprocessor - Text preprocessing
     SemSimilarity - Word semantic similarity using ws4j
     SentenceDetector - Detect sentence boundary
-    StanfordTools - Wrapper for Stanford Core NLP
     Stemmer - using snowball stemmer
     Stopword - Stopword removal for different languages
     
