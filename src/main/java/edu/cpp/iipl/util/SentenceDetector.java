@@ -6,11 +6,17 @@
 
 package edu.cpp.iipl.util;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
+
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -19,8 +25,9 @@ import java.util.Properties;
 public class SentenceDetector {
     
     private final BreakIterator breakIter_;
-    private final StanfordTools stanford_;
-    
+
+    private final StanfordCoreNLP pipeline;
+
     private final String language_;
     
     public SentenceDetector(String language) {
@@ -40,9 +47,10 @@ public class SentenceDetector {
                 break;
         }
 
+        // Stanford NLP with only tokenize and ssplit would be much faster
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit");
-        stanford_ = new StanfordTools(props);
+        pipeline = new StanfordCoreNLP(props);
     }
     
     /**
@@ -105,8 +113,16 @@ public class SentenceDetector {
     public List<String> complex(final String text) {
         if (language_.equals("zh_CN"))
             return chinese(text);
-        else
-            return stanford_.sentence(text);
+        else {
+            Annotation document = new Annotation(text);
+            pipeline.annotate(document);
+
+            return document
+                    .get(CoreAnnotations.SentencesAnnotation.class)
+                    .stream()
+                    .map(CoreMap::toString)
+                    .collect(Collectors.toList());
+        }
     }
     
 }

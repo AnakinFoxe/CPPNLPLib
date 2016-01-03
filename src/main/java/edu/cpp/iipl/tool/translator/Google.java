@@ -65,8 +65,7 @@ public class Google {
      * @throws IOException
      */
     public String translate(String text) 
-            throws UnsupportedEncodingException, 
-            MalformedURLException, IOException {
+            throws IOException {
         String query = this.q + URLEncoder.encode(text, "UTF-8");
         
         // construct the complete URL for GET
@@ -88,11 +87,10 @@ public class Google {
 
                 // obtain the translated result from JSON string
                 JSONObject json = new JSONObject(response);
-                String translatedText = json.getJSONObject("data")
+
+                return json.getJSONObject("data")
                         .getJSONArray("translations").getJSONObject(0)
                         .getString("translatedText");
-                
-                return translatedText;
             } catch (IOException e) {
                 System.out.println("Problem with Google Translation. Retrying "
                         + retry + "/" + maxRetry);

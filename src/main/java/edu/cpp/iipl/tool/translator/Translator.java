@@ -7,20 +7,15 @@
 package edu.cpp.iipl.tool.translator;
 
 import edu.cpp.iipl.util.FileProcessor;
-import edu.cpp.iipl.util.StanfordTools;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import edu.cpp.iipl.util.SentenceDetector;
+
+import java.io.*;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,16 +25,16 @@ import java.util.logging.Logger;
  */
 public class Translator extends FileProcessor {
     
-    private final Google gt;    // Google Translate API class
-    
-    private final StanfordTools stan;   // Stanford NLP tools
-    
+    private final Google gt;            // Google Translate API class
+
+    private final SentenceDetector sd;  // Sentence Detector API class
+
     // essential path info
     private final String PATH_DATA;
     private final String PATH_KEY;
     private final String PATH_STATUS;
-  
-    
+
+
     /**
      * Constructor. 
      * @param basePath      Base path for the data directory. 
@@ -56,11 +51,7 @@ public class Translator extends FileProcessor {
         
         String accessKey = readAccessKey();
         gt = new Google(accessKey, source, target);
-        
-        // Stanford NLP with only tokenize and ssplit would be much faster
-        Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit");
-        stan = new StanfordTools(props);
+        sd = new SentenceDetector(source);
     }
     
     
@@ -77,14 +68,11 @@ public class Translator extends FileProcessor {
                 if (line.trim().length() > 0)
                     return line.trim();
             }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Translator.class.getName())
-                    .log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Translator.class.getName())
                     .log(Level.SEVERE, null, ex);
         }
-        
+
         return null;
     }
     
@@ -96,7 +84,7 @@ public class Translator extends FileProcessor {
      * @throws IOException 
      */
     private HashSet<String> loadStatusFile() 
-            throws FileNotFoundException, IOException {
+            throws IOException {
         HashSet<String> processedFiles = new HashSet<>();
         
         FileReader fr = new FileReader(PATH_STATUS);
@@ -134,12 +122,13 @@ public class Translator extends FileProcessor {
             line = line.replaceAll("<[A-Z]+>", "");
             line = line.replaceAll("</[A-Z]+>", "");
             
-            if ((isText == true) && (line.length() > 0)) {
+            if (isText && (line.length() > 0)) {
                 // when meets a new paragraph, converts the collected paragraph
                 // into sentences and reset the paragraph
                 if (line.matches("^[\\s]+.*")) {
                     paragraph = paragraph.replaceAll("[ ]+", " ");
-                    text.addAll(stan.sentence(paragraph));
+
+                    text.addAll(sd.complex(paragraph));
                     text.add("\n");
                     paragraph = ""; // reset
                 }
@@ -156,7 +145,8 @@ public class Translator extends FileProcessor {
         // last paragraph
         if (paragraph.length() > 1) {
             paragraph = paragraph.replaceAll("[ ]+", " ");
-            text.addAll(stan.sentence(paragraph));
+
+            text.addAll(sd.complex(paragraph));
             text.add("\n");
         }
 
@@ -172,7 +162,7 @@ public class Translator extends FileProcessor {
      */
     @Override
     protected List<String> processFile(String filePath) 
-            throws FileNotFoundException, IOException  {
+            throws IOException  {
         List<String> content = new ArrayList<>();
         
         FileReader fr = new FileReader(filePath);
@@ -229,7 +219,7 @@ public class Translator extends FileProcessor {
      * @throws IOException 
      */
     private List<String> translate(List<String> text) 
-            throws MalformedURLException, IOException {
+            throws IOException {
         List<String> translatedText = new ArrayList<>();
         
         for (String line : text) {
