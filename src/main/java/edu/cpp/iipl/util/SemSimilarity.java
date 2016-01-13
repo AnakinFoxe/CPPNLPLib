@@ -1,89 +1,119 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package edu.cpp.iipl.util;
 
-import edu.cmu.lti.jawjaw.pobj.POS;
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
-import edu.cmu.lti.lexical_db.NictWordNet;
-import edu.cmu.lti.lexical_db.data.Concept;
-import edu.cmu.lti.ws4j.Relatedness;
-import edu.cmu.lti.ws4j.RelatednessCalculator;
-import edu.cmu.lti.ws4j.impl.JiangConrath;
-import edu.cmu.lti.ws4j.util.WS4JConfiguration;
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 
 /**
  * Calculate semantic similarity between two words
- * Currently implemented using ws4j
+ * Currently implemented using ws4j web demo
  * ws4j: https://code.google.com/p/ws4j/
+ * ws4j web demo: http://ws4jdemo.appspot.com/
  * @author Xing
  */
 public class SemSimilarity {
-    private final ILexicalDatabase db;
-    private RelatednessCalculator rc;
-    private List<POS[]> posPairs;
-    
-    public SemSimilarity() {
-        db = new NictWordNet();
-        WS4JConfiguration.getInstance().setMFS(true);
 
-        // only support Jcn for now
-        rc = new JiangConrath(db);
-        posPairs = rc.getPOSPairs();
+    private class Result {
+        private int input1_num;     // total number of synsets
+        private int input2_num;
+        private String input1;
+        private String input2;
+        private double score;
+        private double time;
+
+        public double getScore() { return score; }
+        public double getTime() { return time; }
     }
 
-    public RelatednessCalculator getRc() {
-        return rc;
+    private class Response {
+        private List<Result> result;
+        private String measure;
+
+        public List<Result> getResult() { return result; }
+        public String getMeasure() { return measure; }
     }
 
-    public void setRc(RelatednessCalculator rc) {
-        this.rc = rc;
-        posPairs = rc.getPOSPairs();
-    }
-    
-    
-    
-    /**
-     * Calculate semantic similarity between two words
-     * @param word1     First word
-     * @param word2     Second word
-     * @return          Semantic similarity score
-     */
-    public double calSim(String word1, String word2) {
-        double maxScore = -1D;
-        double score;
+    private Gson gson = new Gson();
 
-        List<Concept> synsets1;
-        List<Concept> synsets2;
-        Relatedness relatedness;
+    // get response (JSON) from url
+    private String getResponseFromUrl(String strUrl) throws IOException {
+        URL url = new URL(strUrl);
+        StringBuilder sb = new StringBuilder();
 
-        // search through synsets for two words 
-        // and find the highest similarity score
-        for(POS[] posPair: posPairs) {
-            synsets1 = (List<Concept>)db.
-                    getAllConcepts(word1, posPair[0].toString());
-            synsets2 = (List<Concept>)db.
-                    getAllConcepts(word2, posPair[1].toString());
-
-            for(Concept synset1: synsets1) {
-                for (Concept synset2: synsets2) {
-                    relatedness = rc.calcRelatednessOfSynset(synset1, synset2);
-                    score = relatedness.getScore();
-                    if (score > maxScore) { 
-                        maxScore = score;
-                    }
-                }
-            }
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(url.openStream(), "UTF-8"))) {
+            int read;
+            char[] chars = new char[1024];
+            while ((read = br.read(chars)) != -1)
+                sb.append(chars, 0, read);
         }
 
-        if (maxScore == -1D) {
-            maxScore = 0.0;
+        return sb.toString();
+    }
+
+    // construct url to query http://ws4jdemo.appspot.com/
+    private String getUrl(String measure, String word1, String word2) {
+        word1 = word1.replaceAll("#", "%23");
+        word2 = word2.replaceAll("#", "%23");
+        return  "http://ws4jdemo.appspot.com/ws4j?measure=" + measure
+                + "&args=" + word1 + "%3A%3A" + word2 + "&trace=0";
+    }
+
+    // base method for getting similarity score
+    private double getSimilarityScore(String measure, String word1, String word2) throws IOException {
+        // construct url
+        String url = getUrl(measure, word1, word2);
+
+        // get response content from ws4j webserver
+        String content = getResponseFromUrl(url);
+
+        // parse to Response object
+        try {
+            Response response = gson.fromJson(content, Response.class);
+
+            if (response.getMeasure().equals(measure) && response.getResult().size() > 0)
+                return response.getResult().get(0).getScore();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return maxScore;
+        return -1D;    // -1D as "invalid" or "not similar at all" in ws4j
+    }
+
+    public double getWup(String word1, String word2) throws IOException {
+        return getSimilarityScore("wup", word1, word2);
+    }
+
+    public double getJcn(String word1, String word2) throws IOException {
+        return getSimilarityScore("jcn", word1, word2);
+    }
+
+    public double getLch(String word1, String word2) throws IOException {
+        return getSimilarityScore("lch", word1, word2);
+    }
+
+    public double getLin(String word1, String word2) throws IOException {
+        return getSimilarityScore("lin", word1, word2);
+    }
+
+    public double getRes(String word1, String word2) throws IOException {
+        return getSimilarityScore("res", word1, word2);
+    }
+
+    public double getPath(String word1, String word2) throws IOException {
+        return getSimilarityScore("path", word1, word2);
+    }
+
+    public double getLesk(String word1, String word2) throws IOException {
+        return getSimilarityScore("lesk", word1, word2);
+    }
+
+    public double getHso(String word1, String word2) throws IOException {
+        return getSimilarityScore("hso", word1, word2);
     }
 }
