@@ -26,7 +26,7 @@
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>3.4</version>
+            <version>3.5.2</version>
             <classifier>models</classifier>
         </dependency>
         <dependency>
@@ -39,14 +39,12 @@
             <artifactId>json</artifactId>
             <version>20140107</version>
         </dependency>
+        <!--  Gson: Java to Json conversion -->
         <dependency>
-            <!-- This library was added locally.
-                You need to download ws4j jar file and place it in the lib folder. -->
-            <groupId>edu.cmu.lti.ws4j</groupId>
-            <artifactId>ws4j</artifactId>
-            <version>1.0.1</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/ws4j-1.0.1.jar</systemPath>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.5</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.twitter4j</groupId>
