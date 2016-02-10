@@ -2,6 +2,10 @@
 package edu.cpp.iipl.util;
 
 import com.google.gson.Gson;
+import edu.cmu.lti.lexical_db.NictWordNet;
+import edu.cmu.lti.ws4j.RelatednessCalculator;
+import edu.cmu.lti.ws4j.impl.*;
+import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,6 +44,33 @@ public class SemSimilarity {
 
     private Gson gson = new Gson();
 
+
+    private final RelatednessCalculator hso;
+    private final RelatednessCalculator lch;
+    private final RelatednessCalculator lesk;
+    private final RelatednessCalculator wup;
+    private final RelatednessCalculator res;
+    private final RelatednessCalculator jcn;
+    private final RelatednessCalculator lin;
+    private final RelatednessCalculator path;
+
+    private boolean isOffline = false;
+
+    public SemSimilarity(boolean isOffline) {
+        hso = new HirstStOnge(new NictWordNet());
+        lch = new LeacockChodorow(new NictWordNet());
+        lesk = new Lesk(new NictWordNet());
+        wup = new WuPalmer(new NictWordNet());
+        res = new Resnik(new NictWordNet());
+        jcn = new JiangConrath(new NictWordNet());
+        lin = new Lin(new NictWordNet());
+        path = new Path(new NictWordNet());
+
+        WS4JConfiguration.getInstance().setMFS(true);
+
+        this.isOffline = isOffline;
+    }
+
     // get response (JSON) from url
     private String getResponseFromUrl(String strUrl) throws IOException {
         URL url = new URL(strUrl);
@@ -69,51 +100,83 @@ public class SemSimilarity {
         // construct url
         String url = getUrl(measure, word1, word2);
 
-        // get response content from ws4j webserver
-        String content = getResponseFromUrl(url);
+        while (true) {
+            try {
+                // get response content from ws4j webserver
+                String content = getResponseFromUrl(url);
 
-        // parse to Response object
-        try {
-            Response response = gson.fromJson(content, Response.class);
+                // parse to Response object
+                Response response = gson.fromJson(content, Response.class);
 
-            if (response.getMeasure().equals(measure) && response.getResult().size() > 0)
-                return response.getResult().get(0).getScore();
-        } catch (Exception e) {
-            e.printStackTrace();
+                if (response.getMeasure().equals(measure) && response.getResult().size() > 0)
+                    return response.getResult().get(0).getScore();
+                else
+                    throw new Exception("Something wrong");
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
-
-        return -1D;    // -1D as "invalid" or "not similar at all" in ws4j
     }
 
     public double getWup(String word1, String word2) throws IOException {
-        return getSimilarityScore("wup", word1, word2);
+        if (isOffline)
+            return wup.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("wup", word1, word2);
     }
 
     public double getJcn(String word1, String word2) throws IOException {
-        return getSimilarityScore("jcn", word1, word2);
+        if (isOffline)
+            return jcn.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("jcn", word1, word2);
     }
 
     public double getLch(String word1, String word2) throws IOException {
-        return getSimilarityScore("lch", word1, word2);
+        if (isOffline)
+            return lch.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("lch", word1, word2);
     }
 
     public double getLin(String word1, String word2) throws IOException {
-        return getSimilarityScore("lin", word1, word2);
+        if (isOffline)
+            return lin.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("lin", word1, word2);
     }
 
     public double getRes(String word1, String word2) throws IOException {
-        return getSimilarityScore("res", word1, word2);
+        if (isOffline)
+            return res.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("res", word1, word2);
     }
 
     public double getPath(String word1, String word2) throws IOException {
-        return getSimilarityScore("path", word1, word2);
+        if (isOffline)
+            return path.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("path", word1, word2);
     }
 
     public double getLesk(String word1, String word2) throws IOException {
-        return getSimilarityScore("lesk", word1, word2);
+        if (isOffline)
+            return lesk.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("lesk", word1, word2);
     }
 
     public double getHso(String word1, String word2) throws IOException {
-        return getSimilarityScore("hso", word1, word2);
+        if (isOffline)
+            return hso.calcRelatednessOfWords(word1, word2);
+        else
+            return getSimilarityScore("hso", word1, word2);
     }
 }

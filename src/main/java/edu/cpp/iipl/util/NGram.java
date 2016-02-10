@@ -34,7 +34,7 @@ public class NGram {
             for (int idx = 1; idx < N; idx++) 
                 ngram += " " + words[i + idx];
             
-            MapUtil.updateHashMap(map, ngram);
+            MapUtil.updateMap(map, ngram);
         } 
     }
     
@@ -54,7 +54,7 @@ public class NGram {
             for (int idx = 1; idx < N; idx++) 
                 ngram += " " + words.get(i + idx);
             
-            MapUtil.updateHashMap(map, ngram);
+            MapUtil.updateMap(map, ngram);
         } 
     }
     

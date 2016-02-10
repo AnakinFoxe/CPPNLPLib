@@ -50,8 +50,8 @@ public class MapUtil {
      * @param map        HashMap to be updated
      * @param word       String type word
     */
-    public static void updateHashMap(HashMap<String, Integer> map, 
-            String word) throws NullPointerException{
+    public static void updateMap(Map<String, Integer> map,
+                                 String word) throws NullPointerException{
         if (map.containsKey(word))
             map.put(word, map.get(word)+1);   // add one
         else
@@ -64,8 +64,8 @@ public class MapUtil {
      * @param word       String type word
      * @param n          Count to be added
     */
-    public static void updateHashMap(HashMap<String, Integer> map, 
-            String word, Integer n) throws NullPointerException{
+    public static void updateMap(Map<String, Integer> map,
+                                 String word, Integer n) throws NullPointerException{
         if (map.containsKey(word))
             map.put(word, map.get(word)+n);   // add n
         else
@@ -77,7 +77,7 @@ public class MapUtil {
      * @param map        HashMap to be calculated
      * @return           Sum of values of the HashMap
     */
-    public static int sumHashMap(HashMap<String, Integer> map) 
+    public static int sumMap(Map<String, Integer> map)
             throws NullPointerException{
         int sum = 0;
         for (Integer value : map.values())

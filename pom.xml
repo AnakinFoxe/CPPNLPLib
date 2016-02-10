@@ -61,5 +61,12 @@
             <artifactId>facebook4j-core</artifactId>
             <version>[2.1,)</version>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu.lti</groupId>
+            <artifactId>ws4j</artifactId>
+            <version>1.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/ws4j-1.0.1.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
