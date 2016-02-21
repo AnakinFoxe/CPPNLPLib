@@ -29,7 +29,7 @@ public class Preprocessor {
     }
     
     private static String removeEmail(String line) {
-        return line.replaceAll("[a-zA-Z0-9.]+@[a-zA-Z0-9.]+", " ");
+        return line.replaceAll("[a-zA-Z0-9\\.]+@[a-zA-Z0-9\\.]+[a-zA-Z]", "email address");
     }
 
     
@@ -42,13 +42,16 @@ public class Preprocessor {
         parsed = parsed.replaceAll("\"", " ");
         parsed = parsed.replaceAll("\\*", " ");
         parsed = parsed.replaceAll("\\$([0-9]+)", "$1 dollars");
-        parsed = parsed.replaceAll(" @ ", " at ");
-        
+        parsed = parsed.replaceAll(" @[ ]?", " at ");
+
         parsed = parsed.replaceAll("[\\-+_/]", "");
         
         parsed = parsed.replaceAll("([,?!])", " $1 ");
         parsed = parsed.replaceAll("([a-zA-Z])\\.", "$1 \\. ");
         parsed = parsed.replaceAll("\\.([a-zA-Z])", " \\. $1");
+
+        parsed = parsed.replaceAll("\\.[ \\.]*\\.", "\\.");
+        parsed = parsed.replaceAll(",[ ,]*,", ",");
 
         return parsed;
     }

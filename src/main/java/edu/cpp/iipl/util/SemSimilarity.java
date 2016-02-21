@@ -113,7 +113,7 @@ public class SemSimilarity {
                 else
                     throw new Exception("Something wrong");
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
 
                 try {
                     Thread.sleep(1000);
