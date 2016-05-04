@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.cpp.iipl.util;
+package edu.cpp.iipl.tool.preprocessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +82,7 @@ public class Stemmer {
         for (String word : words) 
             stemmed.add(stemWord(word));
         
-        return stemmed.toArray(new String[0]);
+        return stemmed.toArray(new String[stemmed.size()]);
     }
     
 }

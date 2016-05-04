@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Chinese word segmentation
- * Applied mmseg4j-core library 
+ * Applied mmseg4j-core library
  * https://github.com/chenlb/mmseg4j-core
  * @author Xing
  */
