@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class Metric {
 
-    public static double MeanSquaredError(List<Double> labels, List<Double> predicts) {
+    public static double meanSquaredError(List<Double> labels, List<Double> predicts) {
         if (labels == null || predicts == null
         || predicts.size() != labels.size() || predicts.size() == 0)
             return -1;
@@ -21,7 +21,7 @@ public class Metric {
         return mse;
     }
 
-    public static double MeanSquaredError(double[] labels, double[] predicts) {
+    public static double meanSquaredError(double[] labels, double[] predicts) {
         if (labels == null || predicts == null
         || predicts.length != labels.length || predicts.length == 0)
             return -1;
@@ -35,53 +35,75 @@ public class Metric {
         return mse;
     }
 
-    public static double QuadraticWeightedKappa(List<Double> labels, List<Double> predicts) {
-        if (predicts.size() != labels.size())
+    public static double quadraticWeightedKappa(List<Integer> labels, List<Integer> predicts) {
+        if (predicts.size() != labels.size() || predicts.size() == 0)
             return -1;
 
-        double kappa = 0;
+        int min = Math.min(minOfAll(labels), minOfAll(predicts));
+        int max = Math.max(maxOfAll(labels), maxOfAll(predicts));
 
-        double min = Math.min(minOfAll(labels), minOfAll(predicts));
-        double max = Math.max(maxOfAll(labels), maxOfAll(predicts));
+        int[][] cm = confusionMatrix(labels, predicts, min, max);
 
+        int[] histogramLabel = histogram(labels, min, max);
+        int[] histogramPredicts = histogram(predicts, min, max);
 
-        return kappa;
+        int numOfLabels = max - min + 1;
+        int numOfItems = labels.size();
+
+        double numerator = 0;
+        double denominator = 0;
+
+        for (int i = 0; i < numOfLabels; ++i)
+            for (int j = 0; j < numOfLabels; ++j) {
+                double expected = histogramLabel[i] * histogramPredicts[j] / (double)numOfItems;
+                double d = Math.pow(i - j, 2) / Math.pow(numOfLabels - 1, 2.0);
+                numerator += d * cm[i][j] / numOfItems;
+                denominator += d * expected / numOfItems;
+            }
+
+        return 1.0 - numerator / denominator;
     }
 
-    public static double[][] ConfusionMatrix(List<Double> labels, List<Double> predicts, double min, double max) {
-        int numOfLabels = (int)(max - min + 1);
-        double[][] cm = new double[numOfLabels][numOfLabels];
+    public static int[][] confusionMatrix(List<Integer> labels, List<Integer> predicts, int min, int max) {
+        int numOfLabels = max - min + 1;
+        int[][] cm = new int[numOfLabels][numOfLabels];
 
-        for (Double label : labels) {
-            for (Double predict : predicts) {
-
-            }
-        }
+        for (int i = 0; i < labels.size(); ++i)
+            cm[labels.get(i) - min][predicts.get(i) - min] += 1;
 
         return cm;
     }
 
+    public static int[] histogram(List<Integer> labels, int min, int max) {
+        int numOfLabels = max - min + 1;
+        int[] histogram = new int[numOfLabels];
 
-    private static double minOfAll(List<Double> nums) {
-        double min = Double.MIN_VALUE;
+        for (int label : labels)
+            histogram[label - min] += 1;
+
+        return histogram;
+    }
+
+    private static int minOfAll(List<Integer> nums) {
+        int min = Integer.MAX_VALUE;
 
         if (nums == null || nums.size() == 0)
             return min;
 
-        for (Double num : nums)
+        for (int num : nums)
             if (min > num)
                 min = num;
 
         return min;
     }
 
-    private static double maxOfAll(List<Double> nums) {
-        double max = Double.MAX_VALUE;
+    private static int maxOfAll(List<Integer> nums) {
+        int max = Integer.MIN_VALUE;
 
         if (nums == null || nums.size() == 0)
             return max;
 
-        for (Double num : nums)
+        for (int num : nums)
             if (max < num)
                 max = num;
 

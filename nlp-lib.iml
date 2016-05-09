@@ -21,11 +21,15 @@
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.2.7" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.efficient-java-matrix-library:ejml:0.23" level="project" />
     <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.0" level="project" />
-    <orderEntry type="library" name="Maven: edu.stanford.nlp:stanford-corenlp:models:3.4" level="project" />
+    <orderEntry type="library" name="Maven: edu.stanford.nlp:stanford-corenlp:models:3.5.2" level="project" />
     <orderEntry type="library" name="Maven: com.chenlb.mmseg4j:mmseg4j-core:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20140107" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.5" level="project" />
+    <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-core:4.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-stream:4.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.facebook4j:facebook4j-core:2.4.3" level="project" />
     <orderEntry type="module-library">
-      <library name="Maven: edu.cmu.lti.ws4j:ws4j:1.0.1">
+      <library name="Maven: edu.cmu.lti:ws4j:1.0.1">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/ws4j-1.0.1.jar!/" />
         </CLASSES>
@@ -33,8 +37,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-core:4.0.3" level="project" />
-    <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-stream:4.0.3" level="project" />
-    <orderEntry type="library" name="Maven: org.facebook4j:facebook4j-core:2.4.1" level="project" />
   </component>
 </module>
