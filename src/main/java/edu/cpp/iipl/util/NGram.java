@@ -6,6 +6,7 @@
 
 package edu.cpp.iipl.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -56,6 +57,38 @@ public class NGram {
             
             MapUtil.updateMap(map, ngram);
         } 
+    }
+
+    /**
+     * Create n-gram from unigram input text.
+     * Using "double (left & right) padding"
+     * @param N
+     * @param unigrams
+     * @return
+     */
+    public static List<String> unigram2NGram(Integer N, String padding,
+                                             List<String> unigrams)
+            throws NullPointerException {
+        List<String> ngrams = new ArrayList<>();
+
+        if (unigrams.size() == 0)
+            return ngrams;
+
+        for (int i = 1 - N; i < unigrams.size(); ++i) {
+            String ngram = "";
+            for (int j = 0; j < N; ++j) {
+                int idx = i + j;
+                if ((idx >= 0) && (idx < unigrams.size()))
+                    ngram += unigrams.get(idx);
+                else
+                    ngram += padding;
+                ngram += " ";
+            }
+
+            ngrams.add(ngram.trim());
+        }
+
+        return ngrams;
     }
     
 }
