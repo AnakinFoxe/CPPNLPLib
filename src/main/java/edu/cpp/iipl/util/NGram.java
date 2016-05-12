@@ -9,6 +9,7 @@ package edu.cpp.iipl.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Extract n-gram information from text
@@ -26,8 +27,8 @@ public class NGram {
      * @param map       HashMap to be updated
      * @param words     Array of string type words
     */
-    public static void updateNGram(Integer N, 
-            HashMap<String, Integer> map, String[] words) 
+    public static void updateNGram(Integer N,
+                                   Map<String, Integer> map, String[] words)
             throws NullPointerException {        
         // create n-gram and update the HashMap
         for (int i = 0; i <= words.length - N; i++) {
@@ -47,7 +48,7 @@ public class NGram {
      * @param words     List of string type words
     */
     public static void updateNGram(Integer N,
-            HashMap<String, Integer> map, List<String> words) 
+                                   Map<String, Integer> map, List<String> words)
             throws NullPointerException {        
         // create n-gram and update the HashMap
         for (int i = 0; i <= words.size() - N; i++) {

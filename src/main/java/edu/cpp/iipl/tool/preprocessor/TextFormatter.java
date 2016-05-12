@@ -26,6 +26,7 @@ public class TextFormatter {
     private boolean FORMAT_EMAIL            = false;
     private boolean FORMAT_PUNCTUATION      = false;
     private boolean FORMAT_UNIT             = false;
+    private boolean FORMAT_DIGIT            = false;
 
     /**
      * Default constructor.
@@ -79,6 +80,9 @@ public class TextFormatter {
                         break;
                     case "unit":
                         FORMAT_UNIT = true;
+                        break;
+                    case "digit":
+                        FORMAT_DIGIT = true;
                         break;
                     default:
                         break;
@@ -211,7 +215,44 @@ public class TextFormatter {
             return line;
     }
     
+    public String formatDigit(String line) {
+        if (FORMAT_DIGIT) {
+            StringBuilder sb = new StringBuilder();
 
+            String[] tokens = line.split(" ");
+            for (int i = 0; i < tokens.length; ++i) {
+                switch (tokens[i]) {
+                    case "zero":
+                        tokens[i] = "0"; break;
+                    case "one":
+                        tokens[i] = "1"; break;
+                    case "two":
+                        tokens[i] = "2"; break;
+                    case "three":
+                        tokens[i] = "3"; break;
+                    case "four":
+                        tokens[i] = "4"; break;
+                    case "five":
+                        tokens[i] = "5"; break;
+                    case "six":
+                        tokens[i] = "6"; break;
+                    case "seven":
+                        tokens[i] = "7"; break;
+                    case "eight":
+                        tokens[i] = "8"; break;
+                    case "nine":
+                        tokens[i] = "9"; break;
+                    default:
+                        break;
+                }
+
+                sb.append(tokens[i]).append(" ");
+            }
+
+            return sb.toString().trim();
+        } else
+            return line;
+    }
 
     /**
      * Format input text according to property settings
@@ -235,6 +276,7 @@ public class TextFormatter {
         parsed = formatEmail(parsed);
         parsed = formatUnit(parsed);
         parsed = formatPunctuation(parsed);
+        parsed = formatDigit(parsed);
         
         // final processing (strong things)
         parsed = removeIrregularSymbols(parsed);

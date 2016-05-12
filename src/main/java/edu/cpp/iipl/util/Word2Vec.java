@@ -14,8 +14,14 @@ public class Word2Vec {
 
     private final Map<String, double[]> vectorsMap;
 
+    private int numOfVectors = 0;
+
     public Word2Vec() {
         vectorsMap = new HashMap<>();
+    }
+
+    public int getNumOfVectors() {
+        return numOfVectors;
     }
 
     public void readVectors(String path) throws IOException {
@@ -30,6 +36,7 @@ public class Word2Vec {
             String[] items = line.trim().split(" ");
             int numOfWords = Integer.parseInt(items[0]);
             int numOfVectors = Integer.parseInt(items[1]);
+            this.numOfVectors = numOfVectors;
 
             // read all the vectors
             for (int w = 0; w < numOfWords; ++w) {
