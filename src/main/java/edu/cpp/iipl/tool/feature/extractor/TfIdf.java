@@ -28,14 +28,14 @@ public class TfIdf {
 
         int numOfDocs = documents.size();
 
-        // init TF matrix
-//        for (String token : dict)
-//            tf.put(token, new int[numOfDocs]);
-
 
         // update TF matrix with token count
         for (int i = 0; i < documents.size(); ++i) {
             for (String token : documents.get(i)) {
+                // only count tokens in the dictionary
+                if (!dict.contains(token))
+                    continue;
+
                 int[] vector;
                 if (tf.containsKey(token)) {
                     vector = tf.get(token);
